@@ -16,6 +16,7 @@ package worker
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	api "github.com/gardener/gardener-extension-provider-openstack/pkg/apis/openstack"
@@ -49,7 +50,6 @@ func NewActuator() worker.Actuator {
 	}
 
 	return genericactuator.NewActuator(
-		log.Log.WithName("openstack-worker-actuator"),
 		delegateFactory,
 		openstack.MachineControllerManagerName,
 		mcmChart,
@@ -117,6 +117,26 @@ type workerDelegate struct {
 	machineImages      []api.MachineImage
 
 	openstackClient client.Factory
+}
+
+func (w *workerDelegate) PreReconcileHook(ctx context.Context) error {
+	//TODO(SKE): Will need to be rebased. Implementation will follow very soon but as of right now it isn't here
+	return errors.New("PreReconcileHook not implemented")
+}
+
+func (w *workerDelegate) PostReconcileHook(ctx context.Context) error {
+	//TODO(SKE): Will need to be rebased. Implementation will follow very soon but as of right now it isn't here
+	return errors.New("PostReconcileHook not implemented")
+}
+
+func (w *workerDelegate) PreDeleteHook(ctx context.Context) error {
+	//TODO(SKE): Will need to be rebased. Implementation will follow very soon but as of right now it isn't here
+	return errors.New("PreDeleteHook not implemented")
+}
+
+func (w *workerDelegate) PostDeleteHook(ctx context.Context) error {
+	//TODO(SKE): Will need to be rebased. Implementation will follow very soon but as of right now it isn't here
+	return errors.New("PostDeleteHook not implemented")
 }
 
 // NewWorkerDelegate creates a new context for a worker reconciliation.

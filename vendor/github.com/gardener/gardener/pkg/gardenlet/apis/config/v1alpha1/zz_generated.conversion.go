@@ -34,7 +34,6 @@ import (
 	runtime "k8s.io/apimachinery/pkg/runtime"
 	componentbaseconfig "k8s.io/component-base/config"
 	configv1alpha1 "k8s.io/component-base/config/v1alpha1"
-	klog "k8s.io/klog"
 )
 
 func init() {
@@ -996,7 +995,6 @@ func autoConvert_v1alpha1_GardenletConfiguration_To_config_GardenletConfiguratio
 	}
 	out.LogLevel = (*string)(unsafe.Pointer(in.LogLevel))
 	out.LogFormat = (*string)(unsafe.Pointer(in.LogFormat))
-	out.KubernetesLogLevel = (*klog.Level)(unsafe.Pointer(in.KubernetesLogLevel))
 	out.Server = (*config.ServerConfiguration)(unsafe.Pointer(in.Server))
 	if in.Debugging != nil {
 		in, out := &in.Debugging, &out.Debugging
@@ -1079,7 +1077,6 @@ func autoConvert_config_GardenletConfiguration_To_v1alpha1_GardenletConfiguratio
 	}
 	out.LogLevel = (*string)(unsafe.Pointer(in.LogLevel))
 	out.LogFormat = (*string)(unsafe.Pointer(in.LogFormat))
-	out.KubernetesLogLevel = (*klog.Level)(unsafe.Pointer(in.KubernetesLogLevel))
 	out.Server = (*ServerConfiguration)(unsafe.Pointer(in.Server))
 	if in.Debugging != nil {
 		in, out := &in.Debugging, &out.Debugging
@@ -1710,6 +1707,7 @@ func Convert_config_ShootMigrationControllerConfiguration_To_v1alpha1_ShootMigra
 }
 
 func autoConvert_v1alpha1_ShootMonitoringConfig_To_config_ShootMonitoringConfig(in *ShootMonitoringConfig, out *config.ShootMonitoringConfig, s conversion.Scope) error {
+	out.Enabled = (*bool)(unsafe.Pointer(in.Enabled))
 	out.RemoteWrite = (*config.RemoteWriteMonitoringConfig)(unsafe.Pointer(in.RemoteWrite))
 	out.ExternalLabels = *(*map[string]string)(unsafe.Pointer(&in.ExternalLabels))
 	return nil
@@ -1721,6 +1719,7 @@ func Convert_v1alpha1_ShootMonitoringConfig_To_config_ShootMonitoringConfig(in *
 }
 
 func autoConvert_config_ShootMonitoringConfig_To_v1alpha1_ShootMonitoringConfig(in *config.ShootMonitoringConfig, out *ShootMonitoringConfig, s conversion.Scope) error {
+	out.Enabled = (*bool)(unsafe.Pointer(in.Enabled))
 	out.RemoteWrite = (*RemoteWriteMonitoringConfig)(unsafe.Pointer(in.RemoteWrite))
 	out.ExternalLabels = *(*map[string]string)(unsafe.Pointer(&in.ExternalLabels))
 	return nil

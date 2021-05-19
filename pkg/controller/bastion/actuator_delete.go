@@ -18,19 +18,19 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	extensionscontroller "github.com/gardener/gardener/extensions/pkg/controller"
 	"time"
 
 	"github.com/gardener/gardener-extension-provider-openstack/pkg/openstack"
 	openstackclient "github.com/gardener/gardener-extension-provider-openstack/pkg/openstack/client"
 
-	"github.com/gardener/gardener/extensions/pkg/controller"
 	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
 	ctrlerror "github.com/gardener/gardener/pkg/controllerutils/reconciler"
 	"github.com/go-logr/logr"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-func (a *actuator) Delete(ctx context.Context, bastion *extensionsv1alpha1.Bastion, cluster *controller.Cluster) error {
+func (a *actuator) Delete(ctx context.Context, log logr.Logger, bastion *extensionsv1alpha1.Bastion, cluster *extensionscontroller.Cluster) error {
 	logger := a.logger.WithValues("bastion", client.ObjectKeyFromObject(bastion), "operation", "delete")
 
 	opt, err := DetermineOptions(bastion, cluster)

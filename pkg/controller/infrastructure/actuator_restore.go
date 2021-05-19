@@ -16,6 +16,7 @@ package infrastructure
 
 import (
 	"context"
+	"github.com/go-logr/logr"
 
 	"github.com/gardener/gardener/extensions/pkg/controller"
 	"github.com/gardener/gardener/extensions/pkg/terraformer"
@@ -25,7 +26,7 @@ import (
 )
 
 // Restore implements infrastructure.Actuator.
-func (a *actuator) Restore(ctx context.Context, infra *extensionsv1alpha1.Infrastructure, cluster *controller.Cluster) error {
+func (a *actuator) Restore(ctx context.Context, log logr.Logger, infra *extensionsv1alpha1.Infrastructure, cluster *controller.Cluster) error {
 	logger := a.logger.WithValues("infrastructure", client.ObjectKeyFromObject(infra), "operation", "restore")
 	terraformState, err := terraformer.UnmarshalRawState(infra.Status.State)
 	if err != nil {

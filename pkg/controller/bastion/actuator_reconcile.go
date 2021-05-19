@@ -26,7 +26,7 @@ import (
 	"github.com/gardener/gardener-extension-provider-openstack/pkg/openstack"
 	openstackclient "github.com/gardener/gardener-extension-provider-openstack/pkg/openstack/client"
 
-	"github.com/gardener/gardener/extensions/pkg/controller"
+	extensionscontroller "github.com/gardener/gardener/extensions/pkg/controller"
 	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
 	ctrlerror "github.com/gardener/gardener/pkg/controllerutils/reconciler"
 	"github.com/go-logr/logr"
@@ -55,7 +55,7 @@ func (be *bastionEndpoints) ready() bool {
 	return be != nil && IngressReady(be.private) && IngressReady(be.public)
 }
 
-func (a *actuator) Reconcile(ctx context.Context, bastion *extensionsv1alpha1.Bastion, cluster *controller.Cluster) error {
+func (a *actuator) Reconcile(ctx context.Context, log logr.Logger, bastion *extensionsv1alpha1.Bastion, cluster *extensionscontroller.Cluster) error {
 	logger := a.logger.WithValues("bastion", client.ObjectKeyFromObject(bastion), "operation", "reconcile")
 
 	err := bastionConfigCheck(a.bastionConfig)
@@ -463,7 +463,7 @@ func ensureSecurityGroup(client openstackclient.Networking, opt *Options) (group
 	return *result, nil
 }
 
-func getInfrastructureStatus(ctx context.Context, c client.Client, cluster *controller.Cluster) (*openstackapi.InfrastructureStatus, error) {
+func getInfrastructureStatus(ctx context.Context, c client.Client, cluster *extensionscontroller.Cluster) (*openstackapi.InfrastructureStatus, error) {
 	worker := &extensionsv1alpha1.Worker{}
 	err := c.Get(ctx, client.ObjectKey{Namespace: cluster.ObjectMeta.Name, Name: cluster.Shoot.Name}, worker)
 	if err != nil {

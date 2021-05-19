@@ -44,9 +44,24 @@ type Networks struct {
 	Worker string `json:"worker"`
 	// Workers is a CIDRs of a worker subnet (private) to create (used for the VMs).
 	Workers string `json:"workers"`
+	// AllocationPool defines the IPs that are assigned to VMs in the network
+	// +optional
+	AllocationPool *string `json:"allocationPool"`
 	// ID is the ID of an existing private network.
 	// +optional
 	ID *string `json:"id,omitempty"`
+	// This flag indicates if one or two L2 networks shall be created
+	// +optional
+	DualHomed *bool `json:"dualHomed"`
+	// SubnetPoolID
+	// +optional
+	SubnetPoolID *string `json:"subnetPoolID"`
+	// ExternalNetworkID is the default gateway network for ipv6 network router
+	// +optional
+	ExternalNetworkID *string `json:"externalNetworkID"`
+	// DNSServers overrides the default dns configuration from cloud profile
+	// +optional
+	DNSServers *[]string `json:"dnsServers,omitempty"`
 }
 
 // Router indicates whether to use an existing router or create a new one.
@@ -77,7 +92,8 @@ type NodeStatus struct {
 // NetworkStatus contains information about a generated Network or resources created in an existing Network.
 type NetworkStatus struct {
 	// ID is the Network id.
-	ID string `json:"id"`
+	ID   string `json:"id"`
+	IDv6 string `json:"idv6,omitempty"`
 	// Name is the Network name.
 	Name string `json:"name"`
 	// FloatingPool contains information about the floating pool.
@@ -92,6 +108,7 @@ type NetworkStatus struct {
 type RouterStatus struct {
 	// ID is the Router id.
 	ID string `json:"id"`
+	IDv6 string `json:"idv6"`
 }
 
 // FloatingPoolStatus contains information about the floating pool.

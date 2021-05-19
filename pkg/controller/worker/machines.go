@@ -17,12 +17,9 @@ package worker
 import (
 	"context"
 	"fmt"
-	"path/filepath"
-
 	api "github.com/gardener/gardener-extension-provider-openstack/pkg/apis/openstack"
 	"github.com/gardener/gardener-extension-provider-openstack/pkg/apis/openstack/helper"
 	"github.com/gardener/gardener-extension-provider-openstack/pkg/openstack"
-
 	extensionscontroller "github.com/gardener/gardener/extensions/pkg/controller"
 	"github.com/gardener/gardener/extensions/pkg/controller/worker"
 	genericworkeractuator "github.com/gardener/gardener/extensions/pkg/controller/worker/genericactuator"
@@ -30,6 +27,7 @@ import (
 	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
 	"github.com/gardener/gardener/pkg/client/kubernetes"
 	machinev1alpha1 "github.com/gardener/machine-controller-manager/pkg/apis/machine/v1alpha1"
+	"path/filepath"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -93,7 +91,12 @@ func (w *workerDelegate) generateMachineConfig(ctx context.Context) error {
 		return err
 	}
 
+	// keep because of backward compatibility
 	subnet, err := helper.FindSubnetByPurpose(infrastructureStatus.Networks.Subnets, api.PurposeNodes)
+	if err != nil {
+		return err
+	}
+	subnets, err := helper.FindSubnetsByPurpose(infrastructureStatus.Networks.Subnets, api.PurposeNodes)
 	if err != nil {
 		return err
 	}
@@ -141,6 +144,7 @@ func (w *workerDelegate) generateMachineConfig(ctx context.Context) error {
 				"machineType":      pool.MachineType,
 				"keyName":          infrastructureStatus.Node.KeyName,
 				"networkID":        infrastructureStatus.Networks.ID,
+				"networkIDv6":      infrastructureStatus.Networks.IDv6,
 				"podNetworkCidr":   extensionscontroller.GetPodNetwork(w.cluster),
 				"securityGroups":   []string{nodesSecurityGroup.Name},
 				"tags": map[string]string{
@@ -158,8 +162,19 @@ func (w *workerDelegate) generateMachineConfig(ctx context.Context) error {
 
 			machineClassSpec["subnetID"] = subnet.ID
 
+			var subnetIDs = make([]string, 0)
+			for _, subnet := range subnets {
+				subnetIDs = append(subnetIDs, subnet.ID)
+			}
+			fmt.Printf("generateMachineConfig(): subnetIDs: %v", subnetIDs)
+			machineClassSpec["subnetIDs"] = subnetIDs
+
 			if volumeSize > 0 {
 				machineClassSpec["rootDiskSize"] = volumeSize
+			}
+
+			if pool.Volume != nil && pool.Volume.Type != nil {
+				machineClassSpec["volumeType"] = pool.Volume.Type
 			}
 
 			// specifying the volume type requires a custom volume size to be specified too.

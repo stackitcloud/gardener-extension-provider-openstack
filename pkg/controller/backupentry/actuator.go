@@ -43,12 +43,12 @@ func (a *actuator) InjectClient(client client.Client) error {
 	return nil
 }
 
-func (a *actuator) GetETCDSecretData(ctx context.Context, be *extensionsv1alpha1.BackupEntry, backupSecretData map[string][]byte) (map[string][]byte, error) {
+func (a *actuator) GetETCDSecretData(ctx context.Context, log logr.Logger, be *extensionsv1alpha1.BackupEntry, backupSecretData map[string][]byte) (map[string][]byte, error) {
 	backupSecretData[openstack.Region] = []byte(be.Spec.Region)
 	return backupSecretData, nil
 }
 
-func (a *actuator) Delete(ctx context.Context, be *extensionsv1alpha1.BackupEntry) error {
+func (a *actuator) Delete(ctx context.Context, log logr.Logger, be *extensionsv1alpha1.BackupEntry) error {
 	openstackClient, err := openstackclient.NewStorageClientFromSecretRef(ctx, a.client, be.Spec.SecretRef, be.Spec.Region)
 	if err != nil {
 		return err
