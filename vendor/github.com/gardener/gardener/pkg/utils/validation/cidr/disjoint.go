@@ -16,6 +16,8 @@ package cidr
 
 import (
 	"fmt"
+	"net"
+	"strings"
 
 	"k8s.io/apimachinery/pkg/util/validation/field"
 
@@ -115,7 +117,14 @@ func ValidateShootNetworkDisjointedness(fldPath *field.Path, shootNodes, shootPo
 
 // NetworksIntersect returns true if the given network CIDRs intersect.
 func NetworksIntersect(cidr1, cidr2 string) bool {
-	c1 := NewCIDR(cidr1, field.NewPath(""))
-	c2 := NewCIDR(cidr2, field.NewPath(""))
-	return c1.ValidateOverlap(c2).ToAggregate() == nil
+	for _, podCidr1 := range strings.Split(cidr1, ",") {
+		for _, podCidr2 := range strings.Split(cidr2, ",") {
+			_, net1, err1 := net.ParseCIDR(podCidr1)
+			_, net2, err2 := net.ParseCIDR(podCidr2)
+			if err1 != nil || err2 != nil || net2.Contains(net1.IP) || net1.Contains(net2.IP) {
+				return true
+			}
+		}
+	}
+	return false
 }

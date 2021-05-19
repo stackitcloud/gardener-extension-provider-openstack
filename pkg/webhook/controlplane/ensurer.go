@@ -426,7 +426,7 @@ func (e *ensurer) EnsureKubeletConfiguration(ctx context.Context, gctx gcontext.
 	}
 
 	// resolv-for-kubelet.conf is created by update-resolv-conf.service
-	new.ResolverConfig = "/etc/resolv-for-kubelet.conf"
+	new.ResolverConfig = pointer.String("/etc/resolv-for-kubelet.conf")
 
 	return nil
 }

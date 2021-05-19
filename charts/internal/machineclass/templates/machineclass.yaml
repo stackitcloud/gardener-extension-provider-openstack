@@ -44,12 +44,22 @@ providerSpec:
 {{- end }}
     networkID: {{ $machineClass.networkID }}
     subnetID: {{ $machineClass.subnetID }}
+{{- if $machineClass.subnetIDs }}
+    subnetIDs:
+{{- range $machineClass.subnetIDs }}
+      - {{ . }}
+{{- end }}
+{{- end }}
+    networkIDv6: {{ $machineClass.networkIDv6 }}
     podNetworkCidr: {{ $machineClass.podNetworkCidr }}
 {{- if $machineClass.rootDiskSize }}
     rootDiskSize: {{ $machineClass.rootDiskSize }}
 {{- end }}
 {{- if $machineClass.rootDiskType}}
     rootDiskType: {{ $machineClass.rootDiskType }}
+{{- end }}
+{{- if $machineClass.volumeType }}
+  volumeType: {{ $machineClass.volumeType }}
 {{- end }}
 {{- if $machineClass.serverGroupID }}
     serverGroupID: {{ $machineClass.serverGroupID }}

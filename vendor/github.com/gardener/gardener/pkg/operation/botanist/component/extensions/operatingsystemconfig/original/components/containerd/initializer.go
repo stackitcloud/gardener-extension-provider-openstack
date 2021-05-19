@@ -17,6 +17,7 @@ package containerd
 import (
 	"bytes"
 	_ "embed"
+	"strconv"
 	"text/template"
 
 	v1beta1constants "github.com/gardener/gardener/pkg/apis/core/v1beta1/constants"
@@ -64,12 +65,45 @@ func (initializer) Config(ctx components.Context) ([]extensionsv1alpha1.Unit, []
 		unitNameInitializer = "containerd-initializer.service"
 	)
 
+	var cGroupDriver = "cgroupfs"
+	if ctx.CGroupDriver != nil {
+		cGroupDriver = *ctx.CGroupDriver
+	}
+
 	var script bytes.Buffer
 	if err := tplInitializer.Execute(&script, map[string]interface{}{
 		"binaryPath":          extensionsv1alpha1.ContainerDRuntimeContainersBinFolder,
+		"cGroupDriver":        cGroupDriver,
 		"pauseContainerImage": ctx.Images[images.ImageNamePauseContainer],
 	}); err != nil {
 		return nil, nil, err
+	}
+
+	runtimeTomlContent := ""
+	if len(ctx.CriEndpoints) > 0 {
+		runtimeTomlContent += "" +
+			"[plugins]\n" +
+			"  [plugins.\"io.containerd.grpc.v1.cri\"]\n" +
+			"    [plugins.\"io.containerd.grpc.v1.cri\".registry]\n" +
+			"      [plugins.\"io.containerd.grpc.v1.cri\".registry.mirrors]\n"
+		//runtimeToml = extensionsv1alpha1.File
+		for _, endpoint := range ctx.CriEndpoints {
+			runtimeTomlContent += "" +
+				"        [plugins.\"io.containerd.grpc.v1.cri\".registry.mirrors.\"" + endpoint.Name + "\"]\n" +
+				"          endpoint = [\"" + endpoint.Endpoint + "\"]\n"
+		}
+		runtimeTomlContent += "" +
+			"      [plugins.\"io.containerd.grpc.v1.cri\".registry.configs]\n"
+		for _, endpoint := range ctx.CriEndpoints {
+			// nil => false
+			// false => false
+			// true => true
+			skip := endpoint.InsecureSkipVerify != nil && *endpoint.InsecureSkipVerify
+
+			runtimeTomlContent += "" +
+				"        [plugins.\"io.containerd.grpc.v1.cri\".registry.configs.\"" + endpoint.Name + "\".tls]\n" +
+				"          insecure_skip_verify = " + strconv.FormatBool(skip) + "\n"
+		}
 	}
 
 	return []extensionsv1alpha1.Unit{
@@ -106,6 +140,15 @@ ExecStart=` + pathScript),
 						Data: `[Unit]
 After=` + unitNameInitializer + `
 Requires=` + unitNameInitializer,
+					},
+				},
+			},
+			{
+				Path:        "/etc/containerd/runtime_ske.toml",
+				Permissions: pointer.Int32Ptr(0644),
+				Content: extensionsv1alpha1.FileContent{
+					Inline: &extensionsv1alpha1.FileContentInline{
+						Data: runtimeTomlContent,
 					},
 				},
 			},

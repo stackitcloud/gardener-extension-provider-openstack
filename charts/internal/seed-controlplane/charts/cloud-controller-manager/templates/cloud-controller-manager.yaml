@@ -39,6 +39,9 @@ spec:
         imagePullPolicy: IfNotPresent
         command:
         - /bin/openstack-cloud-controller-manager
+        {{- if .Values.controllers }}
+        - --controllers={{ .Values.controllers }}
+        {{- end }}
         - --allocate-node-cidrs=true
         - --cloud-provider=openstack
         - --cloud-config=/etc/kubernetes/cloudprovider/cloudprovider.conf
@@ -75,8 +78,8 @@ spec:
           successThreshold: 1
           failureThreshold: 2
           initialDelaySeconds: 15
-          periodSeconds: 10
-          timeoutSeconds: 15
+          periodSeconds: 30
+          timeoutSeconds: 180
         ports:
         - containerPort: {{ include "cloud-controller-manager.port" . }}
           name: metrics

@@ -248,6 +248,35 @@ type SeedSettingVerticalPodAutoscaler struct {
 	// is enabled by default because Gardener heavily relies on a VPA being deployed. You should only disable this if
 	// your seed cluster already has another, manually/custom managed VPA deployment.
 	Enabled bool
+	// UpdaterInterval set the Interval
+	UpdaterInterval string
+	// UpdaterEvictAfterOOMThreshold set the Interval
+	UpdaterEvictAfterOOMThreshold string
+	// GardenletMinAllowed set the VPA minAllowed settings for the gardenlet
+	GardenletMinAllowed *SeedSettingVerticalPodAutoscalerMinAllowed
+	// GardenerResourceManagerMinAllowed set the VPA minAllowed settings for the GardenerResourceManager
+	GardenerResourceManagerMinAllowed *SeedSettingVerticalPodAutoscalerMinAllowed
+	// GardenerSeedAdmissionControllerMinAllowed set the VPA minAllowed settings for the SeedAdmissionController
+	GardenerSeedAdmissionControllerMinAllowed *SeedSettingVerticalPodAutoscalerMinAllowed
+	// AggregatePrometheusMinAllowed set the VPA minAllowed settings for the AggregatePrometheus
+	AggregatePrometheusMinAllowed *SeedSettingVerticalPodAutoscalerMinAllowed
+	// VpaUpdaterMinAllowed set the VPA minAllowed settings for the VpaUpdater
+	VpaUpdaterMinAllowed *SeedSettingVerticalPodAutoscalerMinAllowed
+	// VpaRecommenderMinAllowed set the VPA minAllowed settings for the VpaRecommender
+	VpaRecommenderMinAllowed *SeedSettingVerticalPodAutoscalerMinAllowed
+	// VpaExporterMinAllowed set the VPA minAllowed settings for the VpaExporter
+	VpaExporterMinAllowed *SeedSettingVerticalPodAutoscalerMinAllowed
+	// VpaAdmissionControllerMinAllowed set the VPA minAllowed settings for the VpaAdmissionController
+	VpaAdmissionControllerMinAllowed *SeedSettingVerticalPodAutoscalerMinAllowed
+}
+
+// SeedSettingVerticalPodAutoscalerMinAllowed controls certain settings for the vertical pod autoscaler minAllowed values
+// seed.
+type SeedSettingVerticalPodAutoscalerMinAllowed struct {
+	// Memory Set the minAllowed memory for a component
+	Memory string
+	// Cpu Set the minAllowed cpu for a component
+	Cpu string
 }
 
 // SeedSettingOwnerChecks controls certain owner checks settings for shoots scheduled on this seed.

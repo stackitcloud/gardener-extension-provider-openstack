@@ -3,7 +3,15 @@
 FILE=/etc/containerd/config.toml
 if [ ! -s "$FILE" ]; then
   mkdir -p $(dirname $FILE)
-  containerd config default > "$FILE"
+  echo 'imports = ["/etc/containerd/runtime_*.toml"]' > "$FILE"
+  containerd config default | sed "s#imports = \[\]##g" >> "$FILE"
+fi
+
+# Inject cGroupDriver
+cGroupDriver={{ .cGroupDriver }}
+cGroupDriver_line="$(grep SystemdCgroup $FILE | sed -e 's/^[ ]*//')"
+if [ "$cGroupDriver" = "systemd" ]; then
+  sed -i "s|$cGroupDriver_line|SystemdCgroup = true|g" $FILE
 fi
 
 # use injected image as sandbox image

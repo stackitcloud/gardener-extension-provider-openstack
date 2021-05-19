@@ -275,6 +275,7 @@ type ShootedSeed struct {
 	WithSecretRef                   bool
 	FeatureGates                    map[string]bool
 	Resources                       *ShootedSeedResources
+	VerticalAutoscalerSettings      *gardencorev1beta1.SeedSettingVerticalPodAutoscaler
 }
 
 // ShootedSeedAPIServer contains the configuration of a shooted seed API server.
@@ -338,6 +339,12 @@ func parseShootedSeed(annotation string) (*ShootedSeed, error) {
 		return nil, err
 	}
 	shootedSeed.Backup = backup
+
+	verticalAutoscalerSettings, err := parseShootedSeedVerticalAutoscalerSettings(settings)
+	if err != nil {
+		return nil, err
+	}
+	shootedSeed.VerticalAutoscalerSettings = verticalAutoscalerSettings
 
 	seedProviderConfig, err := parseProviderConfig("providerConfig.", settings)
 	if err != nil {
@@ -620,6 +627,119 @@ func parseShootedSeedAPIServerAutoscaler(settings map[string]string) (*ShootedSe
 	apiServerAutoscaler.MaxReplicas = maxReplicas
 
 	return &apiServerAutoscaler, nil
+}
+
+func parseShootedSeedVerticalAutoscalerSettings(settings map[string]string) (*gardencorev1beta1.SeedSettingVerticalPodAutoscaler, error) {
+	var (
+		updaterInterval, ok1                                 = settings["vpa.updaterInterval"]
+		updaterEvictAfterOOMThreshold, ok2                   = settings["vpa.updaterEvictAfterOOMThreshold"]
+		gardenletMinAllowedCpu, ok3                          = settings["vpa.gardenletMinAllowed.cpu"]
+		gardenletMinAllowedMemory, ok4                       = settings["vpa.gardenletMinAllowed.memory"]
+		gardenerResourceManagerMinAllowedCpu, ok5            = settings["vpa.gardenerResourceManagerMinAllowed.cpu"]
+		gardenerResourceManagerMinAllowedMemory, ok6         = settings["vpa.gardenerResourceManagerMinAllowed.memory"]
+		gardenerSeedAdmissionControllerMinAllowedCpu, ok7    = settings["vpa.gardenerSeedAdmissionController.cpu"]
+		gardenerSeedAdmissionControllerMinAllowedMemory, ok8 = settings["vpa.gardenerSeedAdmissionController.memory"]
+		aggregatePrometheusMinAllowedCpu, ok9                = settings["vpa.aggregatePrometheus.cpu"]
+		aggregatePrometheusMinAllowedMemory, ok10            = settings["vpa.aggregatePrometheus.memory"]
+		vpaUpdaterMinAllowedCpu, ok11                        = settings["vpa.vpaUpdaterMinAllowed.cpu"]
+		vpaUpdaterMinAllowedMemory, ok12                     = settings["vpa.vpaUpdaterMinAllowed.memory"]
+		vpaRecommenderMinAllowedCpu, ok13                    = settings["vpa.vpaRecommenderMinAllowed.cpu"]
+		vpaRecommenderMinAllowedMemory, ok14                 = settings["vpa.vpaRecommenderMinAllowed.memory"]
+		vpaExporterMinAllowedCpu, ok15                       = settings["vpa.vpaExporterMinAllowed.cpu"]
+		vpaExporterMinAllowedMemory, ok16                    = settings["vpa.vpaExporterMinAllowed.memory"]
+		vpaAdmissionControllerMinAllowedCpu, ok17            = settings["vpa.vpaAdmissionControllerMinAllowed.cpu"]
+		vpaAdmissionControllerMinAllowedMemory, ok18         = settings["vpa.vpaAdmissionControllerMinAllowed.memory"]
+	)
+
+	verticalPodAutoscaler := &gardencorev1beta1.SeedSettingVerticalPodAutoscaler{}
+
+	if ok1 {
+		verticalPodAutoscaler.UpdaterInterval = updaterInterval
+	}
+	if ok2 {
+		verticalPodAutoscaler.UpdaterEvictAfterOOMThreshold = updaterEvictAfterOOMThreshold
+	}
+	if ok3 || ok4 {
+		verticalPodAutoscaler.GardenletMinAllowed = &gardencorev1beta1.SeedSettingVerticalPodAutoscalerMinAllowed{}
+	}
+	if ok3 {
+		verticalPodAutoscaler.GardenletMinAllowed.Cpu = gardenletMinAllowedCpu
+	}
+	if ok4 {
+		verticalPodAutoscaler.GardenletMinAllowed.Memory = gardenletMinAllowedMemory
+	}
+
+	if ok5 || ok6 {
+		verticalPodAutoscaler.GardenerResourceManagerMinAllowed = &gardencorev1beta1.SeedSettingVerticalPodAutoscalerMinAllowed{}
+	}
+	if ok5 {
+		verticalPodAutoscaler.GardenerResourceManagerMinAllowed.Cpu = gardenerResourceManagerMinAllowedCpu
+	}
+	if ok6 {
+		verticalPodAutoscaler.GardenerResourceManagerMinAllowed.Memory = gardenerResourceManagerMinAllowedMemory
+	}
+
+	if ok7 || ok8 {
+		verticalPodAutoscaler.GardenerSeedAdmissionControllerMinAllowed = &gardencorev1beta1.SeedSettingVerticalPodAutoscalerMinAllowed{}
+	}
+	if ok7 {
+		verticalPodAutoscaler.GardenerSeedAdmissionControllerMinAllowed.Cpu = gardenerSeedAdmissionControllerMinAllowedCpu
+	}
+	if ok8 {
+		verticalPodAutoscaler.GardenerSeedAdmissionControllerMinAllowed.Memory = gardenerSeedAdmissionControllerMinAllowedMemory
+	}
+
+	if ok9 || ok10 {
+		verticalPodAutoscaler.AggregatePrometheusMinAllowed = &gardencorev1beta1.SeedSettingVerticalPodAutoscalerMinAllowed{}
+	}
+	if ok9 {
+		verticalPodAutoscaler.AggregatePrometheusMinAllowed.Cpu = aggregatePrometheusMinAllowedCpu
+	}
+	if ok10 {
+		verticalPodAutoscaler.AggregatePrometheusMinAllowed.Memory = aggregatePrometheusMinAllowedMemory
+	}
+
+	if ok11 || ok12 {
+		verticalPodAutoscaler.VpaUpdaterMinAllowed = &gardencorev1beta1.SeedSettingVerticalPodAutoscalerMinAllowed{}
+	}
+	if ok11 {
+		verticalPodAutoscaler.VpaUpdaterMinAllowed.Cpu = vpaUpdaterMinAllowedCpu
+	}
+	if ok12 {
+		verticalPodAutoscaler.VpaUpdaterMinAllowed.Memory = vpaUpdaterMinAllowedMemory
+	}
+
+	if ok13 || ok14 {
+		verticalPodAutoscaler.VpaRecommenderMinAllowed = &gardencorev1beta1.SeedSettingVerticalPodAutoscalerMinAllowed{}
+	}
+	if ok13 {
+		verticalPodAutoscaler.VpaRecommenderMinAllowed.Cpu = vpaRecommenderMinAllowedCpu
+	}
+	if ok14 {
+		verticalPodAutoscaler.VpaRecommenderMinAllowed.Memory = vpaRecommenderMinAllowedMemory
+	}
+
+	if ok15 || ok16 {
+		verticalPodAutoscaler.VpaExporterMinAllowed = &gardencorev1beta1.SeedSettingVerticalPodAutoscalerMinAllowed{}
+	}
+	if ok15 {
+		verticalPodAutoscaler.VpaExporterMinAllowed.Cpu = vpaExporterMinAllowedCpu
+	}
+	if ok16 {
+		verticalPodAutoscaler.VpaExporterMinAllowed.Memory = vpaExporterMinAllowedMemory
+	}
+
+	if ok17 || ok18 {
+		verticalPodAutoscaler.VpaAdmissionControllerMinAllowed = &gardencorev1beta1.SeedSettingVerticalPodAutoscalerMinAllowed{}
+	}
+	if ok17 {
+		verticalPodAutoscaler.VpaAdmissionControllerMinAllowed.Cpu = vpaAdmissionControllerMinAllowedCpu
+	}
+	if ok18 {
+		verticalPodAutoscaler.VpaAdmissionControllerMinAllowed.Memory = vpaAdmissionControllerMinAllowedMemory
+	}
+
+	return verticalPodAutoscaler, nil
 }
 
 func parseShootedSeedResources(settings map[string]string) (*ShootedSeedResources, error) {
@@ -1290,6 +1410,11 @@ func NginxIngressEnabled(addons *gardencorev1beta1.Addons) bool {
 	return addons != nil && addons.NginxIngress != nil && addons.NginxIngress.Enabled
 }
 
+// KubeProxyEnabled returns true if the kube-proxy is enabled in the Shoot manifest.
+func KubeProxyEnabled(config *gardencorev1beta1.KubeProxyConfig) bool {
+	return config != nil && config.Enabled != nil && *config.Enabled
+}
+
 // BackupBucketIsErroneous returns `true` if the given BackupBucket has a last error.
 // It also returns the error description if available.
 func BackupBucketIsErroneous(bb *gardencorev1beta1.BackupBucket) (bool, string) {
@@ -1464,4 +1589,108 @@ func AddTypeToSecretBinding(secretBinding *gardencorev1beta1.SecretBinding, prov
 		types = append(types, providerType)
 	}
 	secretBinding.Provider.Type = strings.Join(types, ",")
+}
+
+// IsCoreDNSAutoscalingModeUsed indicates whether the specified autoscaling mode of CoreDNS is enabled or not.
+func IsCoreDNSAutoscalingModeUsed(systemComponents *gardencorev1beta1.SystemComponents, autoscalingMode gardencorev1beta1.CoreDNSAutoscalingMode) bool {
+	isDefaultMode := autoscalingMode == gardencorev1beta1.CoreDNSAutoscalingModeHorizontal
+	if systemComponents == nil {
+		return isDefaultMode
+	}
+
+	if systemComponents.CoreDNS == nil {
+		return isDefaultMode
+	}
+
+	if systemComponents.CoreDNS.Autoscaling == nil {
+		return isDefaultMode
+	}
+
+	return systemComponents.CoreDNS.Autoscaling.Mode == autoscalingMode
+}
+
+// GetShootCARotationPhase returns the specified shoot CA rotation phase or an empty string
+func GetShootCARotationPhase(credentials *gardencorev1beta1.ShootCredentials) gardencorev1beta1.ShootCredentialsRotationPhase {
+	if credentials != nil && credentials.Rotation != nil && credentials.Rotation.CertificateAuthorities != nil {
+		return credentials.Rotation.CertificateAuthorities.Phase
+	}
+	return ""
+}
+
+// MutateShootCARotation mutates the .status.credentials.rotation.certificateAuthorities field based on the provided
+// mutation function. If the field is nil then it is initialized.
+func MutateShootCARotation(shoot *gardencorev1beta1.Shoot, f func(*gardencorev1beta1.ShootCARotation)) {
+	if shoot.Status.Credentials == nil {
+		shoot.Status.Credentials = &gardencorev1beta1.ShootCredentials{}
+	}
+	if shoot.Status.Credentials.Rotation == nil {
+		shoot.Status.Credentials.Rotation = &gardencorev1beta1.ShootCredentialsRotation{}
+	}
+	if shoot.Status.Credentials.Rotation.CertificateAuthorities == nil {
+		shoot.Status.Credentials.Rotation.CertificateAuthorities = &gardencorev1beta1.ShootCARotation{}
+	}
+
+	f(shoot.Status.Credentials.Rotation.CertificateAuthorities)
+}
+
+// MutateShootKubeconfigRotation mutates the .status.credentials.rotation.kubeconfig field based on the provided
+// mutation function. If the field is nil then it is initialized.
+func MutateShootKubeconfigRotation(shoot *gardencorev1beta1.Shoot, f func(*gardencorev1beta1.ShootKubeconfigRotation)) {
+	if shoot.Status.Credentials == nil {
+		shoot.Status.Credentials = &gardencorev1beta1.ShootCredentials{}
+	}
+	if shoot.Status.Credentials.Rotation == nil {
+		shoot.Status.Credentials.Rotation = &gardencorev1beta1.ShootCredentialsRotation{}
+	}
+	if shoot.Status.Credentials.Rotation.Kubeconfig == nil {
+		shoot.Status.Credentials.Rotation.Kubeconfig = &gardencorev1beta1.ShootKubeconfigRotation{}
+	}
+
+	f(shoot.Status.Credentials.Rotation.Kubeconfig)
+}
+
+// IsShootKubeconfigRotationInitiationTimeAfterLastCompletionTime returns true when the lastInitiationTime in the
+// .status.credentials.rotation.kubeconfig field is newer than the lastCompletionTime. This is also true if the
+// lastCompletionTime is unset.
+func IsShootKubeconfigRotationInitiationTimeAfterLastCompletionTime(credentials *gardencorev1beta1.ShootCredentials) bool {
+	if credentials == nil ||
+		credentials.Rotation == nil ||
+		credentials.Rotation.Kubeconfig == nil ||
+		credentials.Rotation.Kubeconfig.LastInitiationTime == nil {
+		return false
+	}
+
+	return credentials.Rotation.Kubeconfig.LastCompletionTime == nil ||
+		credentials.Rotation.Kubeconfig.LastCompletionTime.Before(credentials.Rotation.Kubeconfig.LastInitiationTime)
+}
+
+// MutateShootSSHKeypairRotation mutates the .status.credentials.rotation.sshKeypair field based on the provided
+// mutation function. If the field is nil then it is initialized.
+func MutateShootSSHKeypairRotation(shoot *gardencorev1beta1.Shoot, f func(*gardencorev1beta1.ShootSSHKeypairRotation)) {
+	if shoot.Status.Credentials == nil {
+		shoot.Status.Credentials = &gardencorev1beta1.ShootCredentials{}
+	}
+	if shoot.Status.Credentials.Rotation == nil {
+		shoot.Status.Credentials.Rotation = &gardencorev1beta1.ShootCredentialsRotation{}
+	}
+	if shoot.Status.Credentials.Rotation.SSHKeypair == nil {
+		shoot.Status.Credentials.Rotation.SSHKeypair = &gardencorev1beta1.ShootSSHKeypairRotation{}
+	}
+
+	f(shoot.Status.Credentials.Rotation.SSHKeypair)
+}
+
+// IsShootSSHKeypairRotationInitiationTimeAfterLastCompletionTime returns true when the lastInitiationTime in the
+// .status.credentials.rotation.sshKeypair field is newer than the lastCompletionTime. This is also true if the
+// lastCompletionTime is unset.
+func IsShootSSHKeypairRotationInitiationTimeAfterLastCompletionTime(credentials *gardencorev1beta1.ShootCredentials) bool {
+	if credentials == nil ||
+		credentials.Rotation == nil ||
+		credentials.Rotation.SSHKeypair == nil ||
+		credentials.Rotation.SSHKeypair.LastInitiationTime == nil {
+		return false
+	}
+
+	return credentials.Rotation.SSHKeypair.LastCompletionTime == nil ||
+		credentials.Rotation.SSHKeypair.LastCompletionTime.Before(credentials.Rotation.SSHKeypair.LastInitiationTime)
 }

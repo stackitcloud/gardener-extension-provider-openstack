@@ -236,6 +236,14 @@ message CRI {
   // ContainerRuntimes is the list of the required container runtimes supported for a worker pool.
   // +optional
   repeated ContainerRuntime containerRuntimes = 2;
+
+  // RegistryEndpoint defines a list of registry overrides
+  // +optional
+  repeated RegistryEndpoint endpoints = 3;
+
+  // DownloadHttpProxy defines a proxy that is used for downloading the kubelet and kubectl (only containerd)
+  // +optional
+  optional string downloadHttpProxy = 4;
 }
 
 // CloudInfo contains information about the cloud
@@ -313,6 +321,10 @@ message CloudProfileSpec {
   // +patchStrategy=merge
   // +optional
   repeated VolumeType volumeTypes = 9;
+
+  // MonitoringConfig contains settings for the monitoring stack
+  // +optional
+  optional MonitoringConfig monitoring = 10;
 }
 
 // ClusterAutoscaler contains the configuration flags for the Kubernetes cluster autoscaler.
@@ -548,6 +560,19 @@ message ControllerResource {
   optional bool primary = 5;
 }
 
+// CoreDNS contains the settings of the Core DNS components running in the data plane of the Shoot cluster.
+message CoreDNS {
+  // Autoscaling contains the settings related to autoscaling of the Core DNS components running in the data plane of the Shoot cluster.
+  optional CoreDNSAutoscaling autoscaling = 1;
+}
+
+// CoreDNSAutoscaling contains the settings related to autoscaling of the Core DNS components running in the data plane of the Shoot cluster.
+message CoreDNSAutoscaling {
+  // The mode of the autoscaling to be used for the Core DNS components running in the data plane of the Shoot cluster.
+  // Supported values are `horizontal` and `cluster-proportional`.
+  optional string mode = 1;
+}
+
 // DNS holds information about the provider, the hosted zone id and the domain.
 message DNS {
   // Domain is the external available domain of the Shoot cluster. This domain will be written into the
@@ -678,7 +703,7 @@ message Gardener {
 // Hibernation contains information whether the Shoot is suspended or not.
 message Hibernation {
   // Enabled specifies whether the Shoot needs to be hibernated or not. If it is true, the Shoot's desired state is to be hibernated.
-  // If it is false or nil, the Shoot's desired state is to be awaken.
+  // If it is false or nil, the Shoot's desired state is to be awakened.
   // +optional
   optional bool enabled = 1;
 
@@ -1045,6 +1070,13 @@ message KubeletConfigEvictionSoftGracePeriod {
   optional k8s.io.apimachinery.pkg.apis.meta.v1.Duration nodeFSInodesFree = 5;
 }
 
+// KubeletConfigOverwrites contains overwrites for the kubelet configuration.
+message KubeletConfigOverwrites {
+  // CGroupDriver defines the kubelet setting for cgroupdriver
+  // +optional
+  optional string cGroupDriver = 1;
+}
+
 // KubeletConfigReserved contains reserved resources for daemons
 message KubeletConfigReserved {
   // CPU is the reserved cpu.
@@ -1222,6 +1254,10 @@ message MachineImageVersion {
   // CRI list of supported container runtime and interfaces supported by this version
   // +optional
   repeated CRI cri = 2;
+
+  // KubeletConfigOverwrites defines overwrites for the kubelet configuration
+  // +optional
+  optional KubeletConfigOverwrites kubeletConfigOverwrites = 3;
 }
 
 // MachineType contains certain properties of a machine type.
@@ -1308,6 +1344,45 @@ message Monitoring {
   // Alerting contains information about the alerting configuration for the shoot cluster.
   // +optional
   optional Alerting alerting = 1;
+}
+
+// MonitoringConfig contains settings for the monitoring stack
+message MonitoringConfig {
+  // RemoteWriteURL contains a Url for remote write
+  // +optional
+  optional string remoteWriteURL = 1;
+
+  // RemoteWriteURL contains a username for remote write
+  // +optional
+  optional string remoteWriteUsername = 2;
+
+  // RemoteWriteUsername contains a password for remote write
+  // +optional
+  optional string remoteWritePassword = 3;
+
+  // RemoteWriteName contains a name for the external write. This name will be appended as label
+  // +optional
+  optional string remoteWriteName = 4;
+
+  // RemoteWriteKeep contains a list of metrics that will be remote written
+  // +optional
+  repeated string remoteWriteKeep = 5;
+
+  // ExternalBlackboxExporterURL url of external blackbox exporter
+  // +optional
+  optional string externalBlackboxExporterURL = 6;
+
+  // ExternalBlackboxExporterModule define the module used in target blackbox exporter
+  // +optional
+  optional string externalBlackboxExporterModule = 7;
+
+  // ExternalBlackboxExporterUsername define a user for basic auth
+  // +optional
+  optional string externalBlackboxExporterUsername = 8;
+
+  // ExternalBlackboxExporterPassword define a password for basic auth
+  // +optional
+  optional string externalBlackboxExporterPassword = 9;
 }
 
 // NamedResourceReference is a named reference to a resource.
@@ -1611,6 +1686,10 @@ message Provider {
   // +patchMergeKey=name
   // +patchStrategy=merge
   repeated Worker workers = 4;
+
+  // ComponentResources
+  // +optional
+  map<string, k8s.io.api.core.v1.ResourceRequirements> componentResources = 5;
 }
 
 // Quota represents a quota on resources consumed by shoot clusters either per project or per provider secret.
@@ -1663,6 +1742,19 @@ message Region {
   // quality, reliability, access restrictions, etc.
   // +optional
   map<string, string> labels = 3;
+}
+
+// RegistryEndpoint defines a list of registry overrides
+message RegistryEndpoint {
+  // Name defines the original registry url name
+  optional string name = 1;
+
+  // Endpoint defines the endpoint where the image shall be pulled from
+  optional string endpoint = 2;
+
+  // InsecureSkipVerify defines if tls certs shall be verified
+  // +optional
+  optional bool insecureSkipVerify = 3;
 }
 
 // ResourceWatchCacheSize contains configuration of the API server's watch cache size for one specific resource.
@@ -1907,6 +1999,58 @@ message SeedSettingVerticalPodAutoscaler {
   // is enabled by default because Gardener heavily relies on a VPA being deployed. You should only disable this if
   // your seed cluster already has another, manually/custom managed VPA deployment.
   optional bool enabled = 1;
+
+  // UpdaterInterval set the Interval
+  // +optional
+  optional string updaterInterval = 2;
+
+  // UpdaterEvictAfterOOMThreshold set the Interval
+  // +optional
+  optional string updaterEvictAfterOOMThreshold = 3;
+
+  // GardenletMinAllowed set the VPA minAllowed settings for the gardenlet
+  // +optional
+  optional SeedSettingVerticalPodAutoscalerMinAllowed gardenletMinAllowed = 4;
+
+  // GardenerResourceManagerMinAllowed set the VPA minAllowed settings for the GardenerResourceManager
+  // +optional
+  optional SeedSettingVerticalPodAutoscalerMinAllowed gardenerResourceManagerMinAllowed = 5;
+
+  // GardenerSeedAdmissionControllerMinAllowed set the VPA minAllowed settings for the SeedAdmissionController
+  // +optional
+  optional SeedSettingVerticalPodAutoscalerMinAllowed gardenerSeedAdmissionControllerMinAllowed = 6;
+
+  // AggregatePrometheusMinAllowed set the VPA minAllowed settings for the AggregatePrometheus
+  // +optional
+  optional SeedSettingVerticalPodAutoscalerMinAllowed aggregatePrometheusMinAllowed = 7;
+
+  // VpaUpdaterMinAllowed set the VPA minAllowed settings for the VpaUpdater
+  // +optional
+  optional SeedSettingVerticalPodAutoscalerMinAllowed vpaUpdaterMinAllowed = 8;
+
+  // VpaRecommenderMinAllowed set the VPA minAllowed settings for the VpaRecommender
+  // +optional
+  optional SeedSettingVerticalPodAutoscalerMinAllowed vpaRecommenderMinAllowed = 9;
+
+  // VpaExporterMinAllowed set the VPA minAllowed settings for the VpaExporter
+  // +optional
+  optional SeedSettingVerticalPodAutoscalerMinAllowed vpaExporterMinAllowed = 10;
+
+  // VpaAdmissionControllerMinAllowed set the VPA minAllowed settings for the VpaAdmissionController
+  // +optional
+  optional SeedSettingVerticalPodAutoscalerMinAllowed vpaAdmissionControllerMinAllowed = 11;
+}
+
+// SeedSettingVerticalPodAutoscalerMinAllowed controls certain settings for the vertical pod autoscaler minAllowed values
+// seed.
+message SeedSettingVerticalPodAutoscalerMinAllowed {
+  // Memory Set the minAllowed memory for a component
+  // +optional
+  optional string memory = 1;
+
+  // Cpu Set the minAllowed cpu for a component
+  // +optional
+  optional string cpu = 2;
 }
 
 // SeedSettings contains certain settings for this seed cluster.
@@ -2065,8 +2209,8 @@ message SeedVolumeProvider {
 // ServiceAccountConfig is the kube-apiserver configuration for service accounts.
 message ServiceAccountConfig {
   // Issuer is the identifier of the service account token issuer. The issuer will assert this
-  // identifier in "iss" claim of issued tokens. This value is a string or URI.
-  // Defaults to URI of the API server.
+  // identifier in "iss" claim of issued tokens. This value is used to generate new service account tokens.
+  // This value is a string or URI. Defaults to URI of the API server.
   // +optional
   optional string issuer = 1;
 
@@ -2086,8 +2230,17 @@ message ServiceAccountConfig {
   // MaxTokenExpiration is the maximum validity duration of a token created by the service account token issuer. If an
   // otherwise valid TokenRequest with a validity duration larger than this value is requested, a token will be issued
   // with a validity duration of this value.
+  // This field must be within [30d,90d] when the ShootMaxTokenExpirationValidation feature gate is enabled.
+  // This field will be overwritten to be within [30d,90d] when the ShootMaxTokenExpirationOverwrite feature gate is enabled.
   // +optional
   optional k8s.io.apimachinery.pkg.apis.meta.v1.Duration maxTokenExpiration = 4;
+
+  // AcceptedIssuers is an additional set of issuers that are used to determine which service account tokens are accepted.
+  // These values are not used to generate new service account tokens. Only useful when service account tokens are also
+  // issued by another external system or a change of the current issuer that is used for generating tokens is being performed.
+  // This field is only available for Kubernetes v1.22 or later.
+  // +optional
+  repeated string acceptedIssuers = 5;
 }
 
 // Shoot represents a Shoot cluster created and managed by Gardener.
@@ -2113,6 +2266,54 @@ message ShootAdvertisedAddress {
 
   // The URL of the API Server. e.g. https://api.foo.bar or https://1.2.3.4
   optional string url = 2;
+}
+
+// ShootCARotation contains information about the certificate authority credential rotation.
+message ShootCARotation {
+  // Phase describes the phase of the certificate authority credential rotation.
+  optional string phase = 1;
+
+  // LastInitiationTime is the most recent time when the certificate authority credential rotation was initiated.
+  // +optional
+  optional k8s.io.apimachinery.pkg.apis.meta.v1.Time lastInitiationTime = 3;
+
+  // LastCompletionTime is the most recent time when the certificate authority credential rotation was successfully
+  // completed.
+  // +optional
+  optional k8s.io.apimachinery.pkg.apis.meta.v1.Time lastCompletionTime = 2;
+}
+
+// ShootCredentials contains information about the shoot credentials.
+message ShootCredentials {
+  // Rotation contains information about the credential rotations.
+  // +optional
+  optional ShootCredentialsRotation rotation = 1;
+}
+
+// ShootCredentialsRotation contains information about the rotation of credentials.
+message ShootCredentialsRotation {
+  // CertificateAuthorities contains information about the certificate authority credential rotation.
+  // +optional
+  optional ShootCARotation certificateAuthorities = 1;
+
+  // Kubeconfig contains information about the kubeconfig credential rotation.
+  // +optional
+  optional ShootKubeconfigRotation kubeconfig = 2;
+
+  // SSHKeypair contains information about the ssh-keypair credential rotation.
+  // +optional
+  optional ShootSSHKeypairRotation sshKeypair = 3;
+}
+
+// ShootKubeconfigRotation contains information about the kubeconfig credential rotation.
+message ShootKubeconfigRotation {
+  // LastInitiationTime is the most recent time when the kubeconfig credential rotation was initiated.
+  // +optional
+  optional k8s.io.apimachinery.pkg.apis.meta.v1.Time lastInitiationTime = 1;
+
+  // LastCompletionTime is the most recent time when the kubeconfig credential rotation was successfully completed.
+  // +optional
+  optional k8s.io.apimachinery.pkg.apis.meta.v1.Time lastCompletionTime = 2;
 }
 
 // ShootList is a list of Shoot objects.
@@ -2150,6 +2351,17 @@ message ShootNetworks {
   // Services is the CIDR of the service network.
   // +optional
   optional string services = 2;
+}
+
+// ShootSSHKeypairRotation contains information about the ssh-keypair credential rotation.
+message ShootSSHKeypairRotation {
+  // LastInitiationTime is the most recent time when the certificate authority credential rotation was initiated.
+  // +optional
+  optional k8s.io.apimachinery.pkg.apis.meta.v1.Time lastInitiationTime = 1;
+
+  // LastCompletionTime is the most recent time when the ssh-keypair credential rotation was successfully completed.
+  // +optional
+  optional k8s.io.apimachinery.pkg.apis.meta.v1.Time lastCompletionTime = 2;
 }
 
 // ShootSpec is the specification of a Shoot.
@@ -2226,6 +2438,10 @@ message ShootSpec {
   // This field is immutable.
   // +optional
   optional string exposureClassName = 18;
+
+  // SystemComponents contains the settings of system components in the control or data plane of the Shoot cluster.
+  // +optional
+  optional SystemComponents systemComponents = 19;
 }
 
 // ShootStatus holds the most recently observed status of the Shoot cluster.
@@ -2292,6 +2508,10 @@ message ShootStatus {
   // MigrationStartTime is the time when a migration to a different seed was initiated.
   // +optional
   optional k8s.io.apimachinery.pkg.apis.meta.v1.Time migrationStartTime = 14;
+
+  // Credentials contains information about the shoot credentials.
+  // +optional
+  optional ShootCredentials credentials = 15;
 }
 
 // ShootTemplate is a template for creating a Shoot object.
@@ -2303,6 +2523,13 @@ message ShootTemplate {
   // Specification of the desired behavior of the Shoot.
   // +optional
   optional ShootSpec spec = 2;
+}
+
+// SystemComponents contains the settings of system components in the control or data plane of the Shoot cluster.
+message SystemComponents {
+  // CoreDNS contains the settings of the Core DNS components running in the data plane of the Shoot cluster.
+  // +optional
+  optional CoreDNS coreDNS = 1;
 }
 
 // Toleration is a toleration for a seed taint.

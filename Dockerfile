@@ -3,6 +3,7 @@ FROM golang:1.17.5 AS builder
 
 WORKDIR /go/src/github.com/gardener/gardener-extension-provider-openstack
 COPY . .
+COPY hack/install.sh /go/src/github.com/gardener/gardener-extension-provider-openstack/vendor/github.com/gardener/gardener/hack/install.sh
 RUN make install
 
 ############# base

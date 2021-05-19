@@ -1,5 +1,5 @@
 image:
-  repository: eu.gcr.io/gardener-project/gardener/extensions/provider-openstack
+  repository: registry.alpha.ske.eu01.stackit.cloud/gardener-ds/gardener-extension-provider-openstack
   tag: latest
   pullPolicy: IfNotPresent
 
@@ -71,7 +71,9 @@ config:
     storage:
       className: gardener.cloud-fast
       capacity: 25Gi
-      provisioner: kubernetes.io/cinder
+      provisioner: cinder.csi.openstack.org
+#      parameters:
+#        type: volumetype-nameOrID
 
 gardener:
   version: ""

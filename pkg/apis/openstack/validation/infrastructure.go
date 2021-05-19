@@ -17,6 +17,7 @@ package validation
 import (
 	"reflect"
 	"sort"
+	"strings"
 
 	api "github.com/gardener/gardener-extension-provider-openstack/pkg/apis/openstack"
 	"github.com/gardener/gardener-extension-provider-openstack/pkg/utils"
@@ -52,10 +53,14 @@ func ValidateInfrastructureConfig(infra *api.InfrastructureConfig, nodesCIDR *st
 		allErrs = append(allErrs, cidrvalidation.ValidateCIDRParse(workerCIDR)...)
 		allErrs = append(allErrs, cidrvalidation.ValidateCIDRIsCanonical(networksPath.Child("worker"), infra.Networks.Worker)...)
 	}
+
 	if infra.Networks.Workers != "" {
-		workerCIDR = cidrvalidation.NewCIDR(infra.Networks.Workers, networksPath.Child("workers"))
-		allErrs = append(allErrs, cidrvalidation.ValidateCIDRParse(workerCIDR)...)
-		allErrs = append(allErrs, cidrvalidation.ValidateCIDRIsCanonical(networksPath.Child("workers"), infra.Networks.Workers)...)
+		path := fldPath.Child("workers")
+		for _, svcCidr := range strings.Split(infra.Networks.Workers, ",") {
+			cidr := cidrvalidation.NewCIDR(svcCidr, path)
+			allErrs = append(allErrs, cidr.ValidateParse()...)
+			allErrs = append(allErrs, cidrvalidation.ValidateCIDRIsCanonical(path, cidr.GetCIDR())...)
+		}
 	}
 
 	if nodes != nil {

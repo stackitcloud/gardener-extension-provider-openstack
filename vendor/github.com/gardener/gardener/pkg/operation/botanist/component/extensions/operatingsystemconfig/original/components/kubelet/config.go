@@ -28,7 +28,7 @@ import (
 )
 
 // Config returns a kubelet config based on the provided parameters and for the provided Kubernetes version.
-func Config(kubernetesVersion *semver.Version, clusterDNSAddress, clusterDomain string, params components.ConfigurableKubeletConfigParameters) *kubeletconfigv1beta1.KubeletConfiguration {
+func Config(kubernetesVersion *semver.Version, clusterDNSAddress, clusterDomain string, params components.ConfigurableKubeletConfigParameters, cgroupDriver *string) *kubeletconfigv1beta1.KubeletConfiguration {
 	setConfigDefaults(&params)
 
 	config := &kubeletconfigv1beta1.KubeletConfiguration{
@@ -90,13 +90,16 @@ func Config(kubernetesVersion *semver.Version, clusterDNSAddress, clusterDomain 
 		ReadOnlyPort:                     0,
 		RegistryBurst:                    10,
 		RegistryPullQPS:                  pointer.Int32(5),
-		ResolverConfig:                   "/etc/resolv.conf",
+		ResolverConfig:                   pointer.String("/etc/resolv.conf"),
 		RotateCertificates:               true,
 		RuntimeRequestTimeout:            metav1.Duration{Duration: 2 * time.Minute},
 		SerializeImagePulls:              params.SerializeImagePulls,
 		SyncFrequency:                    metav1.Duration{Duration: time.Minute},
 		SystemReserved:                   params.SystemReserved,
 		VolumeStatsAggPeriod:             metav1.Duration{Duration: time.Minute},
+	}
+	if cgroupDriver != nil {
+		config.CgroupDriver = *cgroupDriver
 	}
 
 	if !version.ConstraintK8sLess119.Check(kubernetesVersion) {
