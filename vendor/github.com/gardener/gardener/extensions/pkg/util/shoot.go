@@ -101,7 +101,7 @@ func GetOrCreateShootKubeconfig(ctx context.Context, c client.Client, certificat
 // the Kube-Apiserver deployment of a Shoot within the Seed cluster.
 // e.g. kube-apiserver.shoot--project--prod.svc.cluster.local.
 func kubeAPIServerServiceDNS(namespace string) string {
-	return fmt.Sprintf("%s.%s", v1beta1constants.DeploymentNameKubeAPIServer, namespace)
+	return fmt.Sprintf("%s.%s.%s", v1beta1constants.DeploymentNameKubeAPIServer, namespace, "svc")
 }
 
 // VersionMajorMinor extracts and returns the major and the minor part of the given version (input must be a semantic version).

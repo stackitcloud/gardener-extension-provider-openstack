@@ -61,6 +61,17 @@ func (w *workerDelegate) GetMachineControllerManagerChartValues(ctx context.Cont
 		return nil, err
 	}
 
+	var httpProxy *string
+	var noProxy *string
+	if proxyConfig := w.cluster.Shoot.Spec.Networking.ProxyConfig; proxyConfig != nil {
+		if proxyConfig.HttpProxy != nil {
+			httpProxy = proxyConfig.HttpProxy
+		}
+		if proxyConfig.NoProxy != nil {
+			noProxy = proxyConfig.NoProxy
+		}
+	}
+
 	return map[string]interface{}{
 		"providerName": openstack.Name,
 		"namespace": map[string]interface{}{
@@ -68,6 +79,10 @@ func (w *workerDelegate) GetMachineControllerManagerChartValues(ctx context.Cont
 		},
 		"podLabels": map[string]interface{}{
 			v1beta1constants.LabelPodMaintenanceRestart: "true",
+		},
+		"proxy": map[string]interface{}{
+			"http_proxy": httpProxy,
+			"no_proxy":   noProxy,
 		},
 	}, nil
 }

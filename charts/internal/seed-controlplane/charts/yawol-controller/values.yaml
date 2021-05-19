@@ -1,0 +1,28 @@
+replicas: 1
+podAnnotations: {}
+podLabels: {}
+#controllers: "*"
+featureGates: {}
+  # CustomResourceValidation: true
+  # RotateKubeletServerCertificate: false
+proxy: {}
+#  http_proxy: "mytest.proxy:8118"
+#  no_proxy: "192.168.0.0/24"
+images:
+  yawol-cloud-controller: image-repository:image-tag
+resources:
+  requests:
+    cpu: 100m
+    memory: 64Mi
+  limits:
+    cpu: 500m
+    memory: 512Mi
+#yawolNamespace: foo-bar
+#yawolOSSecretName: cloud-provider-config
+#yawolFloatingID: foo-bar
+#yawolNetworkID: foo-bar
+#yawolFlavorID: foo-bar
+#yawolImageID: foo-bar
+#yawolAPIHost
+#migrateFromOctavia: false
+#yawolDebug:false

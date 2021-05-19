@@ -1,0 +1,86 @@
+apiVersion: {{ include "deploymentversion" . }}
+kind: Deployment
+metadata:
+  name: yawol-cloud-controller
+  namespace: {{ .Release.Namespace }}
+  labels:
+    garden.sapcloud.io/role: controlplane
+    app: kubernetes
+    role: yawol-cloud-controller
+spec:
+  revisionHistoryLimit: 0
+  replicas: {{ .Values.replicas }}
+  selector:
+    matchLabels:
+      app: kubernetes
+      role: yawol-cloud-controller
+  template:
+    metadata:
+{{- if .Values.podAnnotations }}
+      annotations:
+{{ toYaml .Values.podAnnotations | indent 8 }}
+{{- end }}
+      labels:
+        garden.sapcloud.io/role: controlplane
+        app: kubernetes
+        role: yawol-cloud-controller
+        networking.gardener.cloud/to-dns: allowed
+        networking.gardener.cloud/to-public-networks: allowed
+        networking.gardener.cloud/to-private-networks: allowed
+        networking.gardener.cloud/to-shoot-apiserver: allowed
+        networking.gardener.cloud/from-prometheus: allowed
+        networking.gardener.cloud/to-seed-apiserver: allowed
+{{- if .Values.podLabels }}
+{{ toYaml .Values.podLabels | indent 8 }}
+{{- end }}
+    spec:
+      serviceAccountName: yawol-cloud-controller
+      containers:
+      - name: yawol-cloud-controller
+        image: {{ index .Values.images "yawol-cloud-controller" }}
+        imagePullPolicy: IfNotPresent
+        ports:
+        - containerPort: 8080
+          name: metrics
+        command:
+        - /bin/yawol-cloud-controller
+        - -target-kubeconfig=/var/lib/cloud-controller-manager/kubeconfig
+        - -leader-elect
+        env:
+        {{- if .Values.yawolNamespace }}
+        - name: CLUSTER_NAMESPACE
+          value: {{ .Values.yawolNamespace }}
+        {{- end }}
+        {{- if .Values.yawolOSSecretName }}
+        - name: SECRET_NAME
+          value: {{ .Values.yawolOSSecretName }}
+        {{- end }}
+        {{- if .Values.yawolFloatingID }}
+        - name: FLOATING_NET_ID
+          value: {{ .Values.yawolFloatingID }}
+        {{- end }}
+        {{- if .Values.yawolNetworkID }}
+        - name: NETWORK_ID
+          value: {{ .Values.yawolNetworkID }}
+        {{- end }}
+        {{- if .Values.yawolFlavorID }}
+        - name: FLAVOR_ID
+          value: {{ .Values.yawolFlavorID }}
+        {{- end }}
+        {{- if .Values.yawolImageID }}
+        - name: IMAGE_ID
+          value: {{ .Values.yawolImageID }}
+        {{- end }}
+        {{- if .Values.resources }}
+        resources:
+{{ toYaml .Values.resources | indent 10 }}
+        {{- end }}
+        volumeMounts:
+        - name: cloud-controller-manager
+          mountPath: /var/lib/cloud-controller-manager
+      dnsPolicy: ClusterFirst
+      restartPolicy: Always
+      volumes:
+      - name: cloud-controller-manager
+        secret:
+          secretName: cloud-controller-manager

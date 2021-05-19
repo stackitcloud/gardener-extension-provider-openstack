@@ -44,6 +44,15 @@ images:
   repository: eu.gcr.io/gardener-project/gardener/machine-controller-manager-provider-openstack
   tag: "v0.6.0"
 
+- name: yawol-controller
+  sourceRepository: github.com/stackitcloud/yawol-controller
+  repository: registry.ske.eu01.stackit.cloud/yawol/yawol-controller
+  tag: "v0.4.0"
+- name: yawol-cloud-controller
+  sourceRepository: github.com/stackitcloud/yawol-cloud-controller
+  repository: registry.ske.eu01.stackit.cloud/yawol/yawol-cloud-controller
+  tag: "v0.4.0"
+
 - name: csi-driver-cinder
   sourceRepository: github.com/kubernetes/cloud-provider-openstack
   repository: docker.io/k8scloudprovider/cinder-csi-plugin

@@ -1,0 +1,66 @@
+apiVersion: rbac.authorization.k8s.io/v1
+kind: Role
+metadata:
+  name: extensions.gardener.cloud:yawol-cloud-controller
+  namespace: {{ .Release.Namespace }}
+rules:
+  - apiGroups: ["yawol.stackit.cloud"]
+    resources:
+    - "loadbalancers"
+    - "loadbalancers/status"
+    verbs: ["*"]
+  - apiGroups: [""]
+    resources:
+      - "events"
+    verbs:
+    - create
+    - get
+    - list
+    - watch
+    - patch
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+  - apiGroups:
+      - "coordination.k8s.io"
+    resources:
+      - leases
+    verbs:
+      - get
+      - list
+      - watch
+      - create
+      - update
+      - patch
+      - delete
+  - apiGroups:
+      - ""
+    resources:
+      - configmaps/status
+    verbs:
+      - get
+      - update
+      - patch
+---
+apiVersion: rbac.authorization.k8s.io/v1
+kind: RoleBinding
+metadata:
+  name: extensions.gardener.cloud:yawol-cloud-controller
+  namespace: {{ .Release.Namespace }}
+roleRef:
+  apiGroup: rbac.authorization.k8s.io
+  kind: Role
+  name: extensions.gardener.cloud:yawol-cloud-controller
+subjects:
+  - kind: ServiceAccount
+    name: yawol-cloud-controller
+    namespace: {{ .Release.Namespace }}

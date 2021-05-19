@@ -52,6 +52,14 @@ spec:
         env:
         - name: CSI_ENDPOINT
           value: unix://{{ .Values.socketPath }}/csi.sock
+{{- if .Values.proxy.http_proxy }}
+        - name: http_proxy
+          value: {{ .Values.proxy.http_proxy }}
+{{- end }}
+{{- if .Values.proxy.no_proxy }}
+        - name: no_proxy
+          value: {{ .Values.proxy.no_proxy }}
+{{- end }}
 {{- if .Values.resources.driver }}
         resources:
 {{ toYaml .Values.resources.driver | indent 10 }}
@@ -65,8 +73,8 @@ spec:
             path: /healthz
             port: healthz
           initialDelaySeconds: 10
-          timeoutSeconds: 3
-          periodSeconds: 10
+          timeoutSeconds: 180
+          periodSeconds: 30
           failureThreshold: 5
         volumeMounts:
         - name: socket-dir
@@ -88,7 +96,7 @@ spec:
         args:
         - --csi-address=$(ADDRESS)
         - --kubeconfig=/var/lib/csi-provisioner/kubeconfig
-        - --feature-gates=Topology=true
+        #- --feature-gates=Topology=true
         - --volume-name-prefix=pv-{{ .Release.Namespace }}
         - --default-fstype=ext4
         - --leader-election
@@ -117,7 +125,10 @@ spec:
         - --leader-election
         - --leader-election-namespace=kube-system
         - --timeout={{ .Values.timeout }}
-        - --v=5
+        - --retry-interval-start=1m
+        - --retry-interval-max=15m
+        - --reconcile-sync=5m
+        - --v=3
         env:
         - name: ADDRESS
           value: {{ .Values.socketPath }}/csi.sock
@@ -181,6 +192,7 @@ spec:
         image: {{ index .Values.images "csi-liveness-probe" }}
         args:
         - --csi-address=/csi/csi.sock
+        - --probe-timeout=3m
 {{- if .Values.resources.livenessProbe }}
         resources:
 {{ toYaml .Values.resources.livenessProbe | indent 10 }}

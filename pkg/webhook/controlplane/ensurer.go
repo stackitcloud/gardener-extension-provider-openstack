@@ -42,7 +42,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-const csiMigrationVersion = "1.19"
+const csiMigrationVersion = "1.16"
 
 // NewEnsurer creates a new controlplane ensurer.
 func NewEnsurer(logger logr.Logger) genericmutator.Ensurer {

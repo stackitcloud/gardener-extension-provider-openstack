@@ -147,6 +147,7 @@ func (w *workerDelegate) generateMachineConfig(ctx context.Context) error {
 				"machineType":      pool.MachineType,
 				"keyName":          infrastructureStatus.Node.KeyName,
 				"networkID":        infrastructureStatus.Networks.ID,
+				"networkIDv6":      infrastructureStatus.Networks.IDv6,
 				"podNetworkCidr":   extensionscontroller.GetPodNetwork(w.cluster),
 				"securityGroups":   []string{nodesSecurityGroup.Name},
 				"tags": map[string]string{
@@ -166,6 +167,10 @@ func (w *workerDelegate) generateMachineConfig(ctx context.Context) error {
 
 			if volumeSize > 0 {
 				machineClassSpec["rootDiskSize"] = volumeSize
+			}
+
+			if pool.Volume.Type != nil {
+				machineClassSpec["volumeType"] = pool.Volume.Type
 			}
 
 			if machineImage.ID != "" {

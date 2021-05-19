@@ -84,6 +84,22 @@ type CloudProfileSpec struct {
 	// +patchStrategy=merge
 	// +optional
 	VolumeTypes []VolumeType `json:"volumeTypes,omitempty" patchStrategy:"merge" patchMergeKey:"name" protobuf:"bytes,9,rep,name=volumeTypes"`
+	// MonitoringConfig contains settings for the monitoring stack
+	// +optional
+	Monitoring MonitoringConfig `json:"monitoring,omitempty" protobuf:"bytes,10,opt,name=monitoring"`
+}
+
+// MonitoringConfig contains settings for the monitoring stack
+type MonitoringConfig struct {
+	// RemoteWriteURL contains a Url for remote write
+	// +optional
+	RemoteWriteURL string `json:"remoteWriteURL,omitempty" protobuf:"bytes,1,opt,name=remoteWriteURL"`
+	// RemoteWriteURL contains a username for remote write
+	// +optional
+	RemoteWriteUsername string `json:"remoteWriteUsername,omitempty" protobuf:"bytes,2,opt,name=remoteWriteUsername"`
+	// RemoteWriteUsername contains a password for remote write
+	// +optional
+	RemoteWritePassword string `json:"remoteWritePassword,omitempty" protobuf:"bytes,3,opt,name=remoteWritePassword"`
 }
 
 // SeedSelector contains constraints for selecting seed to be usable for shoots using a profile

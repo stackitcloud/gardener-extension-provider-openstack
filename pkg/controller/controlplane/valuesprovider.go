@@ -180,6 +180,27 @@ var (
 				},
 			},
 			{
+				Name: openstack.YAWOLControllerName,
+				Images: []string{
+					openstack.YAWOLControllerImageName,
+					openstack.YAWOLCloudControllerImageName,
+				},
+				Objects: []*chart.Object{
+					// YAWOLControllerName
+					{Type: &appsv1.Deployment{}, Name: openstack.YAWOLControllerName},
+					{Type: &corev1.ServiceAccount{}, Name: openstack.YAWOLControllerName},
+					{Type: &autoscalingv1beta2.VerticalPodAutoscaler{}, Name: openstack.YAWOLControllerName + "-vpa"},
+					{Type: &rbacv1.Role{}, Name: "extensions.gardener.cloud:" + openstack.YAWOLControllerName},
+					{Type: &rbacv1.RoleBinding{}, Name: "extensions.gardener.cloud:" + openstack.YAWOLControllerName},
+					// YAWOLCloudControllerName
+					{Type: &appsv1.Deployment{}, Name: openstack.YAWOLCloudControllerName},
+					{Type: &corev1.ServiceAccount{}, Name: openstack.YAWOLCloudControllerName},
+					{Type: &autoscalingv1beta2.VerticalPodAutoscaler{}, Name: openstack.YAWOLCloudControllerName + "-vpa"},
+					{Type: &rbacv1.Role{}, Name: "extensions.gardener.cloud:" + openstack.YAWOLCloudControllerName},
+					{Type: &rbacv1.RoleBinding{}, Name: "extensions.gardener.cloud:" + openstack.YAWOLCloudControllerName},
+				},
+			},
+			{
 				Name: openstack.CSIControllerName,
 				Images: []string{
 					openstack.CSIDriverCinderImageName,
@@ -344,6 +365,20 @@ func (vp *valuesProvider) GetControlPlaneChartValues(
 		}
 	}
 
+	// Decode InfrastructureStatus
+	infraStatus := &api.InfrastructureStatus{}
+	if _, _, err := vp.Decoder().Decode(cp.Spec.InfrastructureProviderStatus.Raw, nil, infraStatus); err != nil {
+		return nil, errors.Wrapf(err, "could not decode infrastructureProviderStatus of controlplane '%s'", kutil.ObjectName(cp))
+	}
+
+	// Decode cloudprofileConfig
+	cloudProfileConfig := &api.CloudProfileConfig{}
+	if cluster.CloudProfile.Spec.ProviderConfig != nil {
+		if _, _, err := vp.Decoder().Decode(cluster.CloudProfile.Spec.ProviderConfig.Raw, nil, cloudProfileConfig); err != nil {
+			return nil, errors.Wrapf(err, "could not decode cloudProfileConfig of cluster.CloudProfile '%s'", kutil.ObjectName(cluster.CloudProfile))
+		}
+	}
+
 	cpConfigSecret := &corev1.Secret{}
 	if err := vp.Client().Get(ctx, kutil.Key(cp.Namespace, openstack.CloudProviderConfigName), cpConfigSecret); err != nil {
 		return nil, err
@@ -365,7 +400,7 @@ func (vp *valuesProvider) GetControlPlaneChartValues(
 		userAgentHeaders = vp.getUserAgentHeaders(ctx, cp, cluster)
 	}
 
-	return getControlPlaneChartValues(cpConfig, cp, cluster, userAgentHeaders, checksums, scaledDown)
+	return getControlPlaneChartValues(cpConfig, cp, cluster, cloudProfileConfig, infraStatus, userAgentHeaders, checksums, scaledDown)
 }
 
 // GetControlPlaneShootChartValues returns the values for the control plane shoot chart applied by the generic actuator.
@@ -420,17 +455,92 @@ func (vp *valuesProvider) GetControlPlaneShootCRDsChartValues(
 // GetStorageClassesChartValues returns the values for the shoot storageclasses chart applied by the generic actuator.
 func (vp *valuesProvider) GetStorageClassesChartValues(
 	_ context.Context,
-	_ *extensionsv1alpha1.ControlPlane,
+	controlPlane *extensionsv1alpha1.ControlPlane,
 	cluster *extensionscontroller.Cluster,
 ) (map[string]interface{}, error) {
 	k8sVersionLessThan119, err := version.CompareVersions(cluster.Shoot.Spec.Kubernetes.Version, "<", "1.19")
 	if err != nil {
 		return nil, err
 	}
+	k8sVersionLessThan112, err := version.CompareVersions(cluster.Shoot.Spec.Kubernetes.Version, "<", "1.12")
+	if err != nil {
+		return nil, err
+	}
 
-	return map[string]interface{}{
-		"useLegacyProvisioner": k8sVersionLessThan119,
-	}, nil
+	providerConfig := api.CloudProfileConfig{}
+	if cluster.CloudProfile.Spec.ProviderConfig != nil {
+		if _, _, err := vp.Decoder().Decode(cluster.CloudProfile.Spec.ProviderConfig.Raw, nil, &providerConfig); err != nil {
+			return nil, errors.Wrapf(err, "could not decode providerConfig of controlplane '%s'", kutil.ObjectName(controlPlane))
+		}
+	}
+
+	values := make(map[string]interface{})
+	if providerConfig.StorageClasses != nil && len(providerConfig.StorageClasses) != 0 {
+		allSc := make([]map[string]interface{}, len(providerConfig.StorageClasses))
+		for i, sc := range providerConfig.StorageClasses {
+			allSc[i] = make(map[string]interface{})
+			allSc[i]["name"] = sc.Name
+			if sc.Default != nil && *sc.Default {
+				allSc[i]["default"] = true
+			}
+			if sc.Annotations != nil && len(*sc.Annotations) != 0 {
+				allSc[i]["annotations"] = sc.Annotations
+			}
+			if sc.Annotations != nil && len(*sc.Labels) != 0 {
+				allSc[i]["annotations"] = sc.Annotations
+			}
+			if sc.Parameters != nil && len(*sc.Parameters) != 0 {
+				allSc[i]["parameters"] = sc.Parameters
+			}
+			if sc.Provisioner != nil && *sc.Provisioner != "" {
+				allSc[i]["provisioner"] = sc.Provisioner
+			} else {
+				allSc[i]["provisioner"] = "cinder.csi.openstack.org"
+			}
+			if sc.ReclaimPolicy != nil && *sc.ReclaimPolicy != "" {
+				allSc[i]["reclaimPolicy"] = sc.ReclaimPolicy
+			}
+		}
+		values["storageclasses"] = allSc
+	} else {
+		bindMode := "Immediate"
+		if k8sVersionLessThan119 {
+			if k8sVersionLessThan112 {
+				bindMode = "WaitForFirstConsumer"
+			}
+			values = map[string]interface{}{
+				"storageclasses": []map[string]interface{}{{
+					"name":              "default",
+					"default":           true,
+					"provisioner":       "kubernetes.io/cinder",
+					"volumeBindingMode": bindMode,
+				},
+					{
+						"name":              "default-class",
+						"provisioner":       "kubernetes.io/cinder",
+						"volumeBindingMode": bindMode,
+					},
+				},
+			}
+		} else {
+			values = map[string]interface{}{
+				"storageclasses": []map[string]interface{}{{
+					"name":              "default",
+					"default":           true,
+					"provisioner":       "cinder.csi.openstack.org",
+					"volumeBindingMode": bindMode,
+				},
+					{
+						"name":              "default-class",
+						"provisioner":       "cinder.csi.openstack.org",
+						"volumeBindingMode": bindMode,
+					},
+				},
+			}
+		}
+	}
+
+	return values, nil
 }
 
 func (vp *valuesProvider) getUserAgentHeaders(
@@ -496,6 +606,7 @@ func getConfigChartValues(
 		"subnetID":                    subnet.ID,
 		"authUrl":                     keyStoneURL,
 		"dhcpDomain":                  cloudProfileConfig.DHCPDomain,
+		"internalLB":                 cloudProfileConfig.InternalLB,
 		"requestTimeout":              cloudProfileConfig.RequestTimeout,
 		"useOctavia":                  cloudProfileConfig.UseOctavia != nil && *cloudProfileConfig.UseOctavia,
 		"rescanBlockStorageOnResize":  cloudProfileConfig.RescanBlockStorageOnResize != nil && *cloudProfileConfig.RescanBlockStorageOnResize,
@@ -607,11 +718,13 @@ func getControlPlaneChartValues(
 	cpConfig *api.ControlPlaneConfig,
 	cp *extensionsv1alpha1.ControlPlane,
 	cluster *extensionscontroller.Cluster,
+	cloudprofileConfig *api.CloudProfileConfig,
+	infraStatus *api.InfrastructureStatus,
 	userAgentHeaders []string,
 	checksums map[string]string,
 	scaledDown bool,
 ) (map[string]interface{}, error) {
-	ccm, err := getCCMChartValues(cpConfig, cp, cluster, userAgentHeaders, checksums, scaledDown)
+	ccm, err := getCCMChartValues(cpConfig, cp, cluster, cloudprofileConfig, userAgentHeaders, checksums, scaledDown)
 	if err != nil {
 		return nil, err
 	}
@@ -621,9 +734,15 @@ func getControlPlaneChartValues(
 		return nil, err
 	}
 
+	yawol, err := getYawolChartValues(cpConfig, cp, cluster, cloudprofileConfig, infraStatus, checksums, scaledDown)
+	if err != nil {
+		return nil, err
+	}
+
 	return map[string]interface{}{
 		openstack.CloudControllerManagerName: ccm,
 		openstack.CSIControllerName:          csi,
+		openstack.YAWOLControllerName:        yawol,
 	}, nil
 }
 
@@ -632,10 +751,22 @@ func getCCMChartValues(
 	cpConfig *api.ControlPlaneConfig,
 	cp *extensionsv1alpha1.ControlPlane,
 	cluster *extensionscontroller.Cluster,
+	cloudprofileConfig *api.CloudProfileConfig,
 	userAgentHeaders []string,
 	checksums map[string]string,
 	scaledDown bool,
 ) (map[string]interface{}, error) {
+	var httpProxy *string
+	var noProxy *string
+	if proxyConfig := cluster.Shoot.Spec.Networking.ProxyConfig; proxyConfig != nil {
+		if proxyConfig.HttpProxy != nil {
+			httpProxy = proxyConfig.HttpProxy
+		}
+		if proxyConfig.NoProxy != nil {
+			noProxy = proxyConfig.NoProxy
+		}
+	}
+
 	kubeVersion, err := semver.NewVersion(cluster.Shoot.Spec.Kubernetes.Version)
 	if err != nil {
 		return nil, err
@@ -657,6 +788,17 @@ func getCCMChartValues(
 			v1beta1constants.LabelPodMaintenanceRestart: "true",
 		},
 		"tlsCipherSuites": kutil.TLSCipherSuites(kubeVersion),
+		"proxy": map[string]interface{}{
+			"http_proxy": httpProxy,
+			"no_proxy":   noProxy,
+		},
+	}
+
+	// disable service controller if yawol is enabled and useOctavia is not true
+	if cloudprofileConfig.UseYAWOL != nil && *cloudprofileConfig.UseYAWOL {
+		if !(cloudprofileConfig.UseOctavia != nil && *cloudprofileConfig.UseOctavia) {
+			values["controllers"] = "*,-service"
+		}
 	}
 
 	if userAgentHeaders != nil {
@@ -686,6 +828,17 @@ func getCSIControllerChartValues(
 		return map[string]interface{}{"enabled": false}, nil
 	}
 
+	var httpProxy *string
+	var noProxy *string
+	if proxyConfig := cluster.Shoot.Spec.Networking.ProxyConfig; proxyConfig != nil {
+		if proxyConfig.HttpProxy != nil {
+			httpProxy = proxyConfig.HttpProxy
+		}
+		if proxyConfig.NoProxy != nil {
+			noProxy = proxyConfig.NoProxy
+		}
+	}
+
 	var values = map[string]interface{}{
 		"enabled":  true,
 		"replicas": extensionscontroller.GetControlPlaneReplicas(cluster, scaledDown, 1),
@@ -702,10 +855,61 @@ func getCSIControllerChartValues(
 				"checksum/secret-" + openstack.CSISnapshotControllerName: checksums[openstack.CSISnapshotControllerName],
 			},
 		},
+		"proxy": map[string]interface{}{
+			"http_proxy": httpProxy,
+			"no_proxy":   noProxy,
+		},
 	}
 	if userAgentHeaders != nil {
 		values["userAgentHeaders"] = userAgentHeaders
 	}
+	return values, nil
+}
+
+// getYawolChartValues collects and returns the yawol controller chart values.
+func getYawolChartValues(
+	cpConfig *api.ControlPlaneConfig,
+	cp *extensionsv1alpha1.ControlPlane,
+	cluster *extensionscontroller.Cluster,
+	cloudprofileConfig *api.CloudProfileConfig,
+	infraStatus *api.InfrastructureStatus,
+	checksums map[string]string,
+	scaledDown bool,
+) (map[string]interface{}, error) {
+
+	// disable yawol service controller if yawol is disables or useOctavia is true
+	if (cloudprofileConfig.UseOctavia != nil && *cloudprofileConfig.UseOctavia) ||
+		cloudprofileConfig.UseYAWOL == nil || !*cloudprofileConfig.UseYAWOL {
+		return map[string]interface{}{
+			"enabled": false,
+		}, nil
+	}
+
+	var la string
+	if ok := cluster.Seed.Annotations["stackit.cloud/initial-seed-apiurl"]; ok != "" {
+		la = "https://" + ok
+	} else {
+		ls := strings.TrimPrefix(*cluster.Seed.Spec.DNS.IngressDomain, "i.")
+		la = "https://api." + ls
+	}
+
+	values := map[string]interface{}{
+		"enabled":            true,
+		"replicas":           extensionscontroller.GetControlPlaneReplicas(cluster, scaledDown, 1),
+		"yawolNamespace":     cp.Namespace,
+		"yawolOSSecretName":  "cloud-provider-config",
+		"yawolFloatingID":    infraStatus.Networks.FloatingPool.ID,
+		"yawolNetworkID":     infraStatus.Networks.ID,
+		"yawolFlavorID":      cloudprofileConfig.YAWOLFlavorID,
+		"yawolImageID":       cloudprofileConfig.YAWOLImageID,
+		"migrateFromOctavia": cloudprofileConfig.YAWOLMigrateFromOctavia,
+		"yawolDebug":         cloudprofileConfig.YAWOLDebug,
+		"yawolAPIHost":       la,
+		"podLabels": map[string]interface{}{
+			v1beta1constants.LabelPodMaintenanceRestart: "true",
+		},
+	}
+
 	return values, nil
 }
 
@@ -717,6 +921,22 @@ func getControlPlaneShootChartValues(
 	cloudProviderDiskConfig []byte,
 	userAgentHeader []string,
 ) (map[string]interface{}, error) {
+	var httpProxy *string
+	var noProxy *string
+	if proxyConfig := cluster.Shoot.Spec.Networking.ProxyConfig; proxyConfig != nil {
+		if proxyConfig.HttpProxy != nil {
+			httpProxy = proxyConfig.HttpProxy
+		}
+		if proxyConfig.NoProxy != nil {
+			noProxy = proxyConfig.NoProxy
+		}
+	}
+
+	resources := make(map[string]corev1.ResourceRequirements)
+	if csiDriverNode, ok := cluster.Shoot.Spec.Provider.ComponentResources["csi-driver-node"]; ok {
+		resources["driver"] = csiDriverNode
+	}
+
 	var csiNodeDriverValues = map[string]interface{}{
 		"enabled":           !k8sVersionLessThan119,
 		"kubernetesVersion": cluster.Shoot.Spec.Kubernetes.Version,
@@ -725,6 +945,11 @@ func getControlPlaneShootChartValues(
 			"checksum/secret-" + openstack.CloudProviderCSIDiskConfigName: checksums[openstack.CloudProviderCSIDiskConfigName],
 		},
 		"cloudProviderConfig": cloudProviderDiskConfig,
+		"proxy": map[string]interface{}{
+			"http_proxy": httpProxy,
+			"no_proxy":   noProxy,
+		},
+		"resources": resources,
 	}
 	if userAgentHeader != nil {
 		csiNodeDriverValues["userAgentHeaders"] = userAgentHeader

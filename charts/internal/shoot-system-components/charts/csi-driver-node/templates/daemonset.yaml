@@ -49,6 +49,14 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
+{{- if .Values.proxy.http_proxy }}
+        - name: http_proxy
+          value: {{ .Values.proxy.http_proxy }}
+{{- end }}
+{{- if .Values.proxy.no_proxy }}
+        - name: no_proxy
+          value: {{ .Values.proxy.no_proxy }}
+{{- end }}
 {{- if .Values.resources.driver }}
         resources:
 {{ toYaml .Values.resources.driver | indent 10 }}
@@ -67,8 +75,8 @@ spec:
             path: /healthz
             port: healthz
           initialDelaySeconds: 10
-          timeoutSeconds: 3
-          periodSeconds: 10
+          timeoutSeconds: 180
+          periodSeconds: 30
           failureThreshold: 5
         volumeMounts:
         - name: kubelet-dir
@@ -115,6 +123,7 @@ spec:
         image: {{ index .Values.images "csi-liveness-probe" }}
         args:
         - --csi-address={{ .Values.socketPath }}
+        - --probe-timeout=3m
 {{- if .Values.resources.livenessProbe }}
         resources:
 {{ toYaml .Values.resources.livenessProbe | indent 10 }}

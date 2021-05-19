@@ -7,6 +7,7 @@ metadata:
     app: kubernetes
     role: cloud-controller-manager
 spec:
+  ipFamily: IPv6
   type: ClusterIP
   clusterIP: None
   ports:

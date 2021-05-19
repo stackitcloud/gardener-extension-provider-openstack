@@ -67,6 +67,27 @@ type CloudProfileConfig struct {
 	// ServerGroupPolicies specify the allowed server group policies for worker groups.
 	// +optional
 	ServerGroupPolicies []string `json:"serverGroupPolicies,omitempty"`
+	// UseYAWOL specifies whether the YAWOL load balancing is used. ignored if UseOctavia is true
+	// +optional
+	UseYAWOL *bool `json:"useYAWOL,omitempty"`
+	// YAWOLMigrateFromOctavia specifies that yawol should mograte from octavia. ignored if UseYAWOL is not true
+	// +optional
+	YAWOLMigrateFromOctavia *bool `json:"yawolMigrateFromOctavia,omitempty"`
+	// YAWOLDebug add debug flag to yawol-controller
+	// +optional
+	YAWOLDebug *bool `json:"yawolDebug,omitempty"`
+	// YAWOLImageID specifies the openstack image for yawollet. Must set if UseYAWOL is set
+	// +optional
+	YAWOLImageID *string `json:"yawolImageID,omitempty"`
+	// YAWOLFlavorID specifies the openstack flavor for yawollet. Must set if UseYAWOL is set
+	// +optional
+	YAWOLFlavorID *string `json:"yawolFlavorID,omitempty"`
+	// InternalLB determines whether or not to create an internal load balancer (no floating IP) by default.
+	// +optional
+	InternalLB *bool `json:"internal_lb,omitempty"`
+	// StorageClasses defines storageclasses for the shoot
+	// +optional
+	StorageClasses []StorageClassDefinition `json:"storageClasses,omitempty"`
 	// ResolvConfOptions specifies options to be added to /etc/resolv.conf on workers
 	// +optional
 	ResolvConfOptions []string `json:"resolvConfOptions,omitempty"`
@@ -167,4 +188,28 @@ type RegionIDMapping struct {
 	Name string `json:"name"`
 	// ID is the ID for the machine image in the given region.
 	ID string `json:"id"`
+}
+
+//StorageClassDefinition is a definition of a storageClass
+type StorageClassDefinition struct {
+	// Name is the name of the storageclass
+	Name string `json:"name"`
+	// Default set the storageclass to the default one
+	// +optional
+	Default *bool `json:"default,omitempty"`
+	// Provisioner set the Provisioner inside the storageclass
+	// +optional
+	Provisioner *string `json:"provisioner,omitempty"`
+	// Parameters adds parameters to the storageclass (storageclass.parameters)
+	// +optional
+	Parameters *map[string]string `json:"parameters,omitempty"`
+	// Annotations sets annotations for the storageclass
+	// +optional
+	Annotations *map[string]string `json:"annotations,omitempty"`
+	// Labels sets annotations for the storageclass
+	// +optional
+	Labels *map[string]string `json:"labels,omitempty"`
+	// ReclaimPolicy sets reclaimPolicy for the storageclass
+	// +optional
+	ReclaimPolicy *string `json:"reclaimPolicy,omitempty"`
 }

@@ -142,6 +142,14 @@ var _ = Describe("Terraform", func() {
 			}
 		})
 
+		It("Should split DualStack Cidr correctly", func() {
+			config.Networks.Workers = "100.250.0.0/16,2a05:b540:caf9::38:0/112"
+			values, _ := ComputeTerraformerChartValues(infra, credentials, config, cluster)
+
+			Expect(values["networks"].(map[string]interface{})["nodeIPv4"]).To(Equal("100.250.0.0/16"))
+			Expect(values["networks"].(map[string]interface{})["nodeIPv6"]).To(Equal("2a05:b540:caf9::38:0/112"))
+		})
+
 		It("should correctly compute the terraformer chart values", func() {
 			values, err := ComputeTerraformerTemplateValues(infra, config, cluster)
 			Expect(err).To(BeNil())

@@ -1,0 +1,25 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: yawol-controller
+  namespace: {{ .Release.Namespace }}
+  labels:
+    app: kubernetes
+    role: yawol-controller
+spec:
+  ipFamily: IPv4
+  type: ClusterIP
+  clusterIP: None
+  ports:
+    - name: metrics-lb
+      port: 8080
+      protocol: TCP
+    - name: metrics-lbs
+      port: 8081
+      protocol: TCP
+    - name: metrics-lbm
+      port: 8082
+      protocol: TCP
+  selector:
+    app: kubernetes
+    role: yawol-controller

@@ -60,6 +60,21 @@ type CloudProfileConfig struct {
 	ServerGroupPolicies []string
 	// ResolvConfOptions specifies options to be added to /etc/resolv.conf on workers
 	ResolvConfOptions []string
+	// UseYAWOL specifies whether the YAWOL load balancing is used. ignored if UseOctavia is true
+	UseYAWOL *bool
+	// YAWOLMigrateFromOctavia specifies that yawol should mograte from octavia. ignored if UseYAWOL is not true
+	YAWOLMigrateFromOctavia *bool
+	// YAWOLDebug add debug flag to yawol-controller
+	YAWOLDebug *bool
+	// YAWOLImageID specifies the openstack image for yawollet. Must set if UseYAWOL is set
+	YAWOLImageID *string
+	// YAWOLFlavorID specifies the openstack flavor for yawollet. Must set if UseYAWOL is set
+	YAWOLFlavorID *string
+	// InternalLB determines whether or not to create an internal load balancer (no floating IP) by default.
+	InternalLB *bool
+	// StorageClasses defines storageclasses for the shoot
+	// +optional
+	StorageClasses []StorageClassDefinition
 }
 
 // Constraints is an object containing constraints for the shoots.
@@ -189,4 +204,28 @@ type RegionIDMapping struct {
 	Name string
 	// ID is the ID for the machine image in the given region.
 	ID string
+}
+
+//StorageClassDefinition is a definition of a storageClass
+type StorageClassDefinition struct {
+	// Name is the name of the storageclass
+	Name string
+	// Default set the storageclass to the default one
+	// +optional
+	Default *bool
+	// Provisioner set the Provisioner inside the storageclass
+	// +optional
+	Provisioner *string
+	// Parameters adds parameters to the storageclass (storageclass.parameters)
+	// +optional
+	Parameters *map[string]string
+	// Annotations sets annotations for the storageclass
+	// +optional
+	Annotations *map[string]string
+	// Labels sets annotations for the storageclass
+	// +optional
+	Labels *map[string]string
+	// ReclaimPolicy sets reclaimPolicy for the storageclass
+	// +optional
+	ReclaimPolicy *string
 }

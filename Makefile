@@ -13,10 +13,10 @@
 # limitations under the License.
 
 EXTENSION_PREFIX            := gardener-extension
-NAME                        := provider-openstack
+NAME                        := gardener-extension-provider-openstack
 ADMISSION_NAME              := admission-openstack
-REGISTRY                    := eu.gcr.io/gardener-project/gardener
-IMAGE_PREFIX                := $(REGISTRY)/extensions
+REGISTRY                    := registry.ske.eu01.stackit.cloud/gardener-ds
+IMAGE_PREFIX                := $(REGISTRY)
 REPO_ROOT                   := $(shell dirname $(realpath $(lastword $(MAKEFILE_LIST))))
 HACK_DIR                    := $(REPO_ROOT)/hack
 VERSION                     := $(shell cat "$(REPO_ROOT)/VERSION")
@@ -41,6 +41,7 @@ FLOATING_POOL_NAME := .kube-secrets/openstack/floating_pool_name.secret
 PASSWORD           := .kube-secrets/openstack/password.secret
 TENANT_NAME        := .kube-secrets/openstack/tenant_name.secret
 USER_NAME          := .kube-secrets/openstack/user_name.secret
+
 
 #########################################
 # Rules for local development scenarios #
@@ -85,8 +86,9 @@ docker-login:
 
 .PHONY: docker-images
 docker-images:
-	@docker build -t $(IMAGE_PREFIX)/$(NAME):$(VERSION)           -t $(IMAGE_PREFIX)/$(NAME):latest           -f Dockerfile -m 6g --target $(EXTENSION_PREFIX)-$(NAME)           .
+	@docker build -t $(IMAGE_PREFIX)/$(NAME):$(VERSION)           -t $(IMAGE_PREFIX)/$(NAME):latest           -f Dockerfile -m 6g --target $(NAME)           .
 	@docker build -t $(IMAGE_PREFIX)/$(ADMISSION_NAME):$(VERSION) -t $(IMAGE_PREFIX)/$(ADMISSION_NAME):latest -f Dockerfile -m 6g --target $(EXTENSION_PREFIX)-$(ADMISSION_NAME) .
+	@docker push $(IMAGE_PREFIX)/$(NAME):$(VERSION)
 
 #####################################################################
 # Rules for verification, formatting, linting, testing and cleaning #

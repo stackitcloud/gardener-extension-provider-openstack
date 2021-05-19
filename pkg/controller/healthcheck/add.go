@@ -15,6 +15,9 @@
 package healthcheck
 
 import (
+	api "github.com/gardener/gardener-extension-provider-openstack/pkg/apis/openstack"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/runtime/serializer"
 	"time"
 
 	"github.com/gardener/gardener-extension-provider-openstack/pkg/openstack"
@@ -55,6 +58,24 @@ func RegisterHealthChecks(mgr manager.Manager, opts healthcheck.DefaultAddArgs) 
 		return csiEnabled
 	}
 
+	yawolEnabledPreCheckFunc := func(_ client.Object, cluster *extensionscontroller.Cluster) bool {
+		// cluster.CloudProfile.Spec.ProviderConfig
+		dec := serializer.NewCodecFactory(runtime.NewScheme()).UniversalDecoder()
+		providerConfig := api.CloudProfileConfig{}
+		if cluster.CloudProfile.Spec.ProviderConfig != nil {
+			if _, _, err := dec.Decode(cluster.CloudProfile.Spec.ProviderConfig.Raw, nil, &providerConfig); err != nil {
+				return false
+			}
+			if providerConfig.UseOctavia != nil && *providerConfig.UseOctavia {
+				return false
+			}
+			if providerConfig.UseYAWOL != nil && *providerConfig.UseYAWOL {
+				return true
+			}
+		}
+		return false
+	}
+
 	if err := healthcheck.DefaultRegistration(
 		openstack.Type,
 		extensionsv1alpha1.SchemeGroupVersion.WithKind(extensionsv1alpha1.ControlPlaneResource),
@@ -77,6 +98,11 @@ func RegisterHealthChecks(mgr manager.Manager, opts healthcheck.DefaultAddArgs) 
 				ConditionType: string(gardencorev1beta1.ShootControlPlaneHealthy),
 				HealthCheck:   general.NewSeedDeploymentHealthChecker(openstack.CSISnapshotControllerName),
 				PreCheckFunc:  csiEnabledPreCheckFunc,
+			},
+			{
+				ConditionType: string(gardencorev1beta1.ShootControlPlaneHealthy),
+				HealthCheck:   general.NewSeedDeploymentHealthChecker(openstack.YAWOLControllerName),
+				PreCheckFunc:  yawolEnabledPreCheckFunc,
 			},
 			{
 				ConditionType: string(gardencorev1beta1.ShootSystemComponentsHealthy),

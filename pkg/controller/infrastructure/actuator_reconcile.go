@@ -52,11 +52,25 @@ func (a *actuator) reconcile(ctx context.Context, logger logr.Logger, infra *ext
 		return err
 	}
 
-	tf, err := internal.NewTerraformerWithAuth(logger, a.RESTConfig(), infrastructure.TerraformerPurpose, infra, credentials)
+	additionalEnvs := make(map[string]string)
+	if cluster.Shoot.Spec.Networking.ProxyConfig != nil {
+		if cluster.Shoot.Spec.Networking.ProxyConfig.NoProxy != nil {
+			additionalEnvs["no_proxy"] = *cluster.Shoot.Spec.Networking.ProxyConfig.NoProxy
+		}
+		if cluster.Shoot.Spec.Networking.ProxyConfig.HttpProxy != nil {
+			additionalEnvs["http_proxy"] = *cluster.Shoot.Spec.Networking.ProxyConfig.HttpProxy
+		}
+	}
+
+	// todo resolve method (change signature accordingly)
+	//tf, err := internal.NewTerraformerWithAuth(logger, a.RESTConfig(), infrastructure.TerraformerPurpose, infra, additionalEnvs) ours
+	//tf, err := internal.NewTerraformerWithAuth(logger, a.RESTConfig(), infrastructure.TerraformerPurpose, infra, credentials) upstream
+	tf, err := internal.NewTerraformerWithAuth(logger, a.RESTConfig(), infrastructure.TerraformerPurpose, infra, credentials, additionalEnvs)
 	if err != nil {
 		return err
 	}
 
+	// wtf
 	if err := tf.
 		InitializeWith(ctx, terraformer.DefaultInitializer(a.Client(), terraformFiles.Main, terraformFiles.Variables, terraformFiles.TFVars, stateInitializer)).
 		Apply(ctx); err != nil {

@@ -56,6 +56,17 @@ spec:
         - --safety-down=1
         - --delete-migrated-machine-class=true
         - --v=3
+{{- if .Values.proxy }}
+        env:
+{{- if .Values.proxy.http_proxy }}
+        - name: http_proxy
+          value: {{ .Values.proxy.http_proxy }}
+{{- end }}
+{{- if .Values.proxy.no_proxy }}
+        - name: no_proxy
+          value: {{ .Values.proxy.no_proxy }}
+{{- end }}
+{{- end }}
         livenessProbe:
           failureThreshold: 3
           httpGet:
