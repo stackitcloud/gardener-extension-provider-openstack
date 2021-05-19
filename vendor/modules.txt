@@ -58,6 +58,8 @@ github.com/evanphx/json-patch
 # github.com/fatih/color v1.13.0
 ## explicit; go 1.13
 github.com/fatih/color
+# github.com/frankban/quicktest v1.14.3
+## explicit; go 1.13
 # github.com/fsnotify/fsnotify v1.5.1
 ## explicit; go 1.13
 github.com/fsnotify/fsnotify
@@ -68,7 +70,7 @@ github.com/gardener/etcd-druid/api/v1alpha1
 ## explicit; go 1.14
 github.com/gardener/external-dns-management/pkg/apis/dns
 github.com/gardener/external-dns-management/pkg/apis/dns/v1alpha1
-# github.com/gardener/gardener v1.53.0
+# github.com/gardener/gardener v1.53.0 => github.com/stackitcloud/gardener v1.53.0-ske-1
 ## explicit; go 1.18
 github.com/gardener/gardener/.github
 github.com/gardener/gardener/.github/ISSUE_TEMPLATE
@@ -199,7 +201,7 @@ github.com/gardener/gardener-extension-networking-calico/pkg/calico
 # github.com/gardener/hvpa-controller/api v0.5.0
 ## explicit; go 1.15
 github.com/gardener/hvpa-controller/api/v1alpha1
-# github.com/gardener/machine-controller-manager v0.45.0
+# github.com/gardener/machine-controller-manager v0.45.0 => github.com/stackitcloud/machine-controller-manager v0.46.0-ske-1
 ## explicit; go 1.17
 github.com/gardener/machine-controller-manager/pkg/apis/machine
 github.com/gardener/machine-controller-manager/pkg/apis/machine/v1alpha1
@@ -374,8 +376,6 @@ github.com/josharian/intern
 # github.com/json-iterator/go v1.1.12
 ## explicit; go 1.12
 github.com/json-iterator/go
-# github.com/kr/pretty v0.3.0
-## explicit; go 1.12
 # github.com/kubernetes-csi/external-snapshotter/v2 v2.1.4
 ## explicit; go 1.12
 github.com/kubernetes-csi/external-snapshotter/v2/pkg/apis/volumesnapshot/v1beta1
@@ -1203,6 +1203,9 @@ sigs.k8s.io/structured-merge-diff/v4/value
 # sigs.k8s.io/yaml v1.3.0
 ## explicit; go 1.12
 sigs.k8s.io/yaml
+# github.com/gardener/gardener => github.com/stackitcloud/gardener v1.53.0-ske-1
+# github.com/gardener/gardener-resource-manager/api => github.com/gardener/gardener-resource-manager/api v0.25.0
+# github.com/gardener/machine-controller-manager => github.com/stackitcloud/machine-controller-manager v0.46.0-ske-1
 # github.com/prometheus/client_golang => github.com/prometheus/client_golang v1.12.1
 # k8s.io/api => k8s.io/api v0.24.3
 # k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.24.3

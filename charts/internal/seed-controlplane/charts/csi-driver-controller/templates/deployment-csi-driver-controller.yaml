@@ -30,6 +30,7 @@ spec:
         role: controller
         gardener.cloud/role: controlplane
         networking.gardener.cloud/to-dns: allowed
+        networking.gardener.cloud/from-prometheus: allowed
         networking.gardener.cloud/to-public-networks: allowed
         networking.gardener.cloud/to-shoot-apiserver: allowed
         networking.gardener.cloud/to-private-networks: allowed
@@ -53,10 +54,6 @@ spec:
         env:
         - name: CSI_ENDPOINT
           value: unix://{{ .Values.socketPath }}/csi.sock
-{{- if .Values.resources.driver }}
-        resources:
-{{ toYaml .Values.resources.driver | indent 10 }}
-{{- end }}
         ports:
         - name: healthz
           containerPort: 9808
@@ -66,8 +63,8 @@ spec:
             path: /healthz
             port: healthz
           initialDelaySeconds: 10
-          timeoutSeconds: 3
-          periodSeconds: 10
+          timeoutSeconds: 180
+          periodSeconds: 30
           failureThreshold: 5
         volumeMounts:
         - name: socket-dir
@@ -91,11 +88,15 @@ spec:
         - --kubeconfig=/var/run/secrets/gardener.cloud/shoot/generic-kubeconfig/kubeconfig
         - --feature-gates=Topology=true
         - --volume-name-prefix=pv-{{ .Release.Namespace }}
+        - --metrics-address=0.0.0.0:8080
         - --default-fstype=ext4
         - --leader-election
         - --leader-election-namespace=kube-system
         - --timeout={{ .Values.timeout }}
         - --v=5
+        ports:
+          - containerPort: 8080
+            name: metrics
         env:
         - name: ADDRESS
           value: {{ .Values.socketPath }}/csi.sock
@@ -119,7 +120,14 @@ spec:
         - --leader-election
         - --leader-election-namespace=kube-system
         - --timeout={{ .Values.timeout }}
-        - --v=5
+        - --retry-interval-start=1m
+        - --http-endpoint=0.0.0.0:8081
+        - --retry-interval-max=15m
+        - --reconcile-sync=5m
+        - --v=3
+        ports:
+        - containerPort: 8081
+          name: metrics
         env:
         - name: ADDRESS
           value: {{ .Values.socketPath }}/csi.sock
@@ -187,6 +195,7 @@ spec:
         image: {{ index .Values.images "csi-liveness-probe" }}
         args:
         - --csi-address=/csi/csi.sock
+        - --probe-timeout=3m
 {{- if .Values.resources.livenessProbe }}
         resources:
 {{ toYaml .Values.resources.livenessProbe | indent 10 }}

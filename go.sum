@@ -198,7 +198,8 @@ github.com/fatih/color v1.13.0/go.mod h1:kLAiJbzzSOZDVNGyDpeOxJ47H46qBXwg5ILebYF
 github.com/felixge/httpsnoop v1.0.1/go.mod h1:m8KPJKqk1gH5J9DgRY2ASl2lWCfGKXixSwevea8zH2U=
 github.com/form3tech-oss/jwt-go v3.2.2+incompatible/go.mod h1:pbq4aXjuKjdthFRnoDwaVPLA+WlJuPGy+QneDUgJi2k=
 github.com/form3tech-oss/jwt-go v3.2.3+incompatible/go.mod h1:pbq4aXjuKjdthFRnoDwaVPLA+WlJuPGy+QneDUgJi2k=
-github.com/frankban/quicktest v1.13.1 h1:xVm/f9seEhZFL9+n5kv5XLrGwy6elc4V9v/XFY2vmd8=
+github.com/frankban/quicktest v1.14.3 h1:FJKSZTDHjyhriyC81FLQ0LY93eSai0ZyR/ZIkd3ZUKE=
+github.com/frankban/quicktest v1.14.3/go.mod h1:mgiwOwqx65TmIk1wJ6Q7wvnVMocbUorkibMOrVTHZps=
 github.com/fsnotify/fsnotify v1.4.7/go.mod h1:jwhsz4b93w/PPRr/qN1Yymfu8t87LnFCMoQvtojpjFo=
 github.com/fsnotify/fsnotify v1.4.9/go.mod h1:znqG4EE+3YCdAaPaxE2ZRY/06pZUdp0tY4IgpuI1SZQ=
 github.com/fsnotify/fsnotify v1.5.1 h1:mZcQUHVQUQWoPXXtuf9yuEXKudkV2sx1E06UadKWpgI=
@@ -208,14 +209,10 @@ github.com/gardener/etcd-druid v0.9.0 h1:nQWqmPpT5LhURPTADQ/93x7AiCCe7ruJ9DQnYU/
 github.com/gardener/etcd-druid v0.9.0/go.mod h1:EJF6z4Ghv2FGUe1UzZWOEF1MxCA186fxvjBO44oSJX4=
 github.com/gardener/external-dns-management v0.7.18 h1:15uIyFfZSbR8fivnXvqb1Dvv4QqzfNYxEFUQ9K+mpsE=
 github.com/gardener/external-dns-management v0.7.18/go.mod h1:oHhauLQ3/sop0c1urS6n304Wqv/WM4me0geLn9nTAcY=
-github.com/gardener/gardener v1.53.0 h1:SffBCuyxcPlveZkxFuek+sVwMeF2F5wEjD8F6+EiNvE=
-github.com/gardener/gardener v1.53.0/go.mod h1:O+59kTQavqxX5nr5jyHqD6o4JxIukHMaW2t5BLiXqmc=
 github.com/gardener/gardener-extension-networking-calico v1.25.0 h1:mkdroxXFkMDNgX0wMrqGWKBGuB4YaXnNFIJFSgeyyCk=
 github.com/gardener/gardener-extension-networking-calico v1.25.0/go.mod h1:A6pG11WJwT0WD7fY6nNupfm/w9YNla7P9YTcC/Baz5I=
 github.com/gardener/hvpa-controller/api v0.5.0 h1:f4F3O7YUrenwh4S3TgPREPiB287JjjUiUL18OqPLyAA=
 github.com/gardener/hvpa-controller/api v0.5.0/go.mod h1:QQl3ELkCaki+8RhXl0FZMfvnm0WCGwGJlGmrxJj6lvM=
-github.com/gardener/machine-controller-manager v0.45.0 h1:rpf0PHRXJMGY93oMruNP+tnMawKJXhhzCACyNJsT8Lo=
-github.com/gardener/machine-controller-manager v0.45.0/go.mod h1:+4j/6ab3jqbM6tM6FPtlajYgaJHM0xZ44ErOjCBlsP8=
 github.com/getkin/kin-openapi v0.76.0/go.mod h1:660oXbgy5JFMKreazJaQTw7o+X00qeSyhcnluiMv+Xg=
 github.com/getsentry/raven-go v0.2.0/go.mod h1:KungGk8q33+aIAZUIVWZDr2OfAEBsO49PX4NzFV5kcQ=
 github.com/ghodss/yaml v0.0.0-20150909031657-73d445a93680/go.mod h1:4dBDuWmgqj2HViK6kFavaiC9ZROes6MMH2rRYeMEF04=
@@ -618,6 +615,10 @@ github.com/spf13/viper v1.4.0/go.mod h1:PTJ7Z/lr49W6bUbkmS1V3by4uWynFiR9p7+dSq/y
 github.com/spf13/viper v1.7.0/go.mod h1:8WkrPz2fc9jxqZNCJI/76HCieCp4Q8HaLFoCha5qpdg=
 github.com/spf13/viper v1.11.0 h1:7OX/1FS6n7jHD1zGrZTM7WtY13ZELRyosK4k93oPr44=
 github.com/spf13/viper v1.11.0/go.mod h1:djo0X/bA5+tYVoCn+C7cAYJGcVn/qYLFTG8gdUsX7Zk=
+github.com/stackitcloud/gardener v1.53.0-ske-1 h1:3LujJntyAU74Au9U9B6KvhEffMPle73LOJGXbO7syKE=
+github.com/stackitcloud/gardener v1.53.0-ske-1/go.mod h1:U3AM3738XDByD0BmSD0iOJshXPHoAUstRTeDCceuNs0=
+github.com/stackitcloud/machine-controller-manager v0.46.0-ske-1 h1:QjfL80oJ+yVyX3iy+mXALg2BF7H4haVVNyhq88DhOZQ=
+github.com/stackitcloud/machine-controller-manager v0.46.0-ske-1/go.mod h1:Un8BoUdl+64nkkWfe69XwkwAJNRmSl9J6BTICI/qkbE=
 github.com/stoewer/go-strcase v1.2.0/go.mod h1:IBiWB2sKIp3wVVQ3Y035++gc+knqhUQag1KpM8ahLw8=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/objx v0.1.1/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=

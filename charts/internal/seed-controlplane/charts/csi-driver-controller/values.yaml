@@ -12,15 +12,16 @@ images:
   csi-snapshot-validation-webhook: image-repository:image-tag
 
 socketPath: /var/lib/csi/sockets/pluginproxy
-timeout: 3m
+timeout: 6m
 userAgentHeaders: []
 
 resources:
   driver:
     requests:
-      cpu: 20m
+      cpu: 250m
       memory: 50Mi
     limits:
+      cpu: 600m
       memory: 360Mi
   provisioner:
     requests:

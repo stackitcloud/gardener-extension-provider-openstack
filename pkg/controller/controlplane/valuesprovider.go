@@ -17,6 +17,7 @@ package controlplane
 import (
 	"context"
 	"fmt"
+	"github.com/pkg/errors"
 	"path/filepath"
 	"strings"
 
@@ -301,6 +302,20 @@ func (vp *valuesProvider) GetControlPlaneChartValues(
 		}
 	}
 
+	// Decode InfrastructureStatus
+	infraStatus := &api.InfrastructureStatus{}
+	if _, _, err := vp.Decoder().Decode(cp.Spec.InfrastructureProviderStatus.Raw, nil, infraStatus); err != nil {
+		return nil, errors.Wrapf(err, "could not decode infrastructureProviderStatus of controlplane '%s'", kutil.ObjectName(cp))
+	}
+
+	// Decode cloudprofileConfig
+	cloudProfileConfig := &api.CloudProfileConfig{}
+	if cluster.CloudProfile.Spec.ProviderConfig != nil {
+		if _, _, err := vp.Decoder().Decode(cluster.CloudProfile.Spec.ProviderConfig.Raw, nil, cloudProfileConfig); err != nil {
+			return nil, errors.Wrapf(err, "could not decode cloudProfileConfig of cluster.CloudProfile '%s'", kutil.ObjectName(cluster.CloudProfile))
+		}
+	}
+
 	cpConfigSecret := &corev1.Secret{}
 	if err := vp.Client().Get(ctx, kutil.Key(cp.Namespace, openstack.CloudProviderConfigName), cpConfigSecret); err != nil {
 		return nil, err
@@ -358,17 +373,95 @@ func (vp *valuesProvider) GetControlPlaneShootCRDsChartValues(
 // GetStorageClassesChartValues returns the values for the shoot storageclasses chart applied by the generic actuator.
 func (vp *valuesProvider) GetStorageClassesChartValues(
 	_ context.Context,
-	_ *extensionsv1alpha1.ControlPlane,
+	controlPlane *extensionsv1alpha1.ControlPlane,
 	cluster *extensionscontroller.Cluster,
 ) (map[string]interface{}, error) {
 	k8sVersionLessThan119, err := version.CompareVersions(cluster.Shoot.Spec.Kubernetes.Version, "<", openstack.CSIMigrationKubernetesVersion)
 	if err != nil {
 		return nil, err
 	}
+	k8sVersionLessThan112, err := version.CompareVersions(cluster.Shoot.Spec.Kubernetes.Version, "<", "1.12")
+	if err != nil {
+		return nil, err
+	}
 
-	return map[string]interface{}{
-		"useLegacyProvisioner": k8sVersionLessThan119,
-	}, nil
+	providerConfig := api.CloudProfileConfig{}
+	if cluster.CloudProfile.Spec.ProviderConfig != nil {
+		if _, _, err := vp.Decoder().Decode(cluster.CloudProfile.Spec.ProviderConfig.Raw, nil, &providerConfig); err != nil {
+			return nil, errors.Wrapf(err, "could not decode providerConfig of controlplane '%s'", kutil.ObjectName(controlPlane))
+		}
+	}
+
+	values := make(map[string]interface{})
+	if providerConfig.StorageClasses != nil && len(providerConfig.StorageClasses) != 0 {
+		allSc := make([]map[string]interface{}, len(providerConfig.StorageClasses))
+		for i, sc := range providerConfig.StorageClasses {
+			allSc[i] = make(map[string]interface{})
+			allSc[i]["name"] = sc.Name
+			if sc.Default != nil && *sc.Default {
+				allSc[i]["default"] = true
+			}
+			if sc.Annotations != nil && len(*sc.Annotations) != 0 {
+				allSc[i]["annotations"] = sc.Annotations
+			}
+			if sc.Annotations != nil && len(*sc.Labels) != 0 {
+				allSc[i]["annotations"] = sc.Annotations
+			}
+			if sc.Parameters != nil && len(*sc.Parameters) != 0 {
+				allSc[i]["parameters"] = sc.Parameters
+			}
+			if sc.Provisioner != nil && *sc.Provisioner != "" {
+				allSc[i]["provisioner"] = sc.Provisioner
+			} else {
+				allSc[i]["provisioner"] = "cinder.csi.openstack.org"
+			}
+			if sc.ReclaimPolicy != nil && *sc.ReclaimPolicy != "" {
+				allSc[i]["reclaimPolicy"] = sc.ReclaimPolicy
+			}
+			if sc.VolumeBindingMode != nil && *sc.VolumeBindingMode != "" {
+				allSc[i]["volumeBindingMode"] = sc.VolumeBindingMode
+			}
+		}
+		values["storageclasses"] = allSc
+	} else {
+		bindMode := "Immediate"
+		if k8sVersionLessThan119 {
+			if k8sVersionLessThan112 {
+				bindMode = "WaitForFirstConsumer"
+			}
+			values = map[string]interface{}{
+				"storageclasses": []map[string]interface{}{{
+					"name":              "default",
+					"default":           true,
+					"provisioner":       "kubernetes.io/cinder",
+					"volumeBindingMode": bindMode,
+				},
+					{
+						"name":              "default-class",
+						"provisioner":       "kubernetes.io/cinder",
+						"volumeBindingMode": bindMode,
+					},
+				},
+			}
+		} else {
+			values = map[string]interface{}{
+				"storageclasses": []map[string]interface{}{{
+					"name":              "default",
+					"default":           true,
+					"provisioner":       "cinder.csi.openstack.org",
+					"volumeBindingMode": bindMode,
+				},
+					{
+						"name":              "default-class",
+						"provisioner":       "cinder.csi.openstack.org",
+						"volumeBindingMode": bindMode,
+					},
+				},
+			}
+		}
+	}
+
+	return values, nil
 }
 
 func (vp *valuesProvider) getUserAgentHeaders(
@@ -612,6 +705,11 @@ func getCCMChartValues(
 		"secrets": map[string]interface{}{
 			"server": serverSecret.Name,
 		},
+	}
+
+	// allows disabling shoot's octavia
+	if cpConfig.LoadBalancerProvider != "octavia" {
+		values["controllers"] = "*,-service"
 	}
 
 	if userAgentHeaders != nil {

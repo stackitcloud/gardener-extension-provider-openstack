@@ -17,7 +17,6 @@ package infrastructure
 import (
 	"context"
 	"fmt"
-
 	"github.com/gardener/gardener-extension-provider-openstack/pkg/internal"
 	"github.com/gardener/gardener-extension-provider-openstack/pkg/internal/infrastructure"
 	"github.com/go-logr/logr"
