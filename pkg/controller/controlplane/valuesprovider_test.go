@@ -17,6 +17,7 @@ package controlplane
 import (
 	"context"
 	"encoding/json"
+	"github.com/gardener/gardener-extension-provider-openstack/pkg/apis/config"
 	"time"
 
 	api "github.com/gardener/gardener-extension-provider-openstack/pkg/apis/openstack"
@@ -250,7 +251,9 @@ var _ = Describe("ValuesProvider", func() {
 
 		c = mockclient.NewMockClient(ctrl)
 
-		vp = NewValuesProvider(logger, true, true)
+		vp = NewValuesProvider(logger, true, true, &config.CSI{
+			CSIAttacher:    &config.CSIAttacher{RetryIntervalMax: pointer.StringPtr("99m"), ReconcileSync: pointer.StringPtr("42m")},
+			CSISnapshotter: &config.CSISnapshotter{Timeout: pointer.StringPtr("3m")}})
 		err := vp.(inject.Scheme).InjectScheme(scheme)
 		Expect(err).NotTo(HaveOccurred())
 		err = vp.(inject.Client).InjectClient(c)
@@ -519,6 +522,17 @@ var _ = Describe("ValuesProvider", func() {
 				}),
 				openstack.CSIControllerName: utils.MergeMaps(enabledTrue, map[string]interface{}{
 					"replicas": 1,
+					"csiAttacher": map[string]interface{}{
+						"args": map[string]interface{}{
+							"retryIntervalMax": pointer.StringPtr("99m"),
+							"reconcileSync":    pointer.StringPtr("42m"),
+						},
+					},
+					"csiSnapshotter": map[string]interface{}{
+						"args": map[string]interface{}{
+							"timeout": pointer.StringPtr("3m"),
+						},
+					},
 					"podAnnotations": map[string]interface{}{
 						"checksum/secret-" + openstack.CSIProvisionerName:             checksums[openstack.CSIProvisionerName],
 						"checksum/secret-" + openstack.CSIAttacherName:                checksums[openstack.CSIAttacherName],

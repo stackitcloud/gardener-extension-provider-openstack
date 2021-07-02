@@ -25,3 +25,8 @@ data:
 {{- if .Values.config.etcd.backup }}
 {{ toYaml .Values.config.etcd.backup | indent 6 }}
 {{- end }}
+
+{{- if .Values.config.csi }}
+    csi:
+      {{- toYaml .Values.config.csi | nindent 6 }}
+{{- end}}

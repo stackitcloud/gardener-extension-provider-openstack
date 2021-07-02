@@ -11,52 +11,74 @@ images:
   csi-snapshot-controller: image-repository:image-tag
 
 socketPath: /var/lib/csi/sockets/pluginproxy
-timeout: 3m
 userAgentHeaders: []
 
-resources:
-  driver:
+csiDriverCinder:
+  resources:
     requests:
       cpu: 20m
       memory: 50Mi
     limits:
       cpu: 50m
       memory: 80Mi
-  provisioner:
+  args:
+    timeout: 3m
+
+csiProvisioner:
+  resources:
     requests:
       cpu: 10m
       memory: 32Mi
     limits:
       cpu: 30m
       memory: 50Mi
-  attacher:
+  args:
+    timeout: 3m
+
+csiAttacher:
+  resources:
     requests:
       cpu: 10m
       memory: 32Mi
     limits:
       cpu: 30m
       memory: 50Mi
-  snapshotter:
+  args:
+    timeout: 3m
+
+csiSnapshotter:
+  resources:
     requests:
       cpu: 10m
       memory: 32Mi
     limits:
       cpu: 30m
       memory: 50Mi
-  resizer:
+  args:
+    timeout: 3m
+
+csiResizer:
+  resources:
     requests:
       cpu: 10m
       memory: 32Mi
     limits:
       cpu: 30m
       memory: 50Mi
-  livenessProbe:
+  args:
+    csiTimeout: 3m
+
+
+csiLivenessProbe:
+  resources:
     requests:
       cpu: 10m
       memory: 32Mi
     limits:
       cpu: 30m
       memory: 50Mi
+  args: {}
+
 
 csiSnapshotController:
   replicas: 1
@@ -68,3 +90,4 @@ csiSnapshotController:
     limits:
       cpu: 30m
       memory: 50Mi
+  args: {}

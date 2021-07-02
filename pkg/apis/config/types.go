@@ -35,6 +35,8 @@ type ControllerConfiguration struct {
 	ETCD ETCD
 	// HealthCheckConfig is the config for the health check controller
 	HealthCheckConfig *healthcheckconfig.HealthCheckConfig
+	// CSI is the config for the csi components
+	CSI *CSI
 }
 
 // ETCD is an etcd configuration.
@@ -43,6 +45,78 @@ type ETCD struct {
 	Storage ETCDStorage
 	// ETCDBackup is the etcd backup configuration.
 	Backup ETCDBackup
+}
+
+type CSI struct {
+	// CSIAttacher is the configuration for the csi-attacher
+	CSIAttacher *CSIAttacher
+	// CSIDriverCinder is the configuration for the csi-driver-cinder
+	CSIDriverCinder *CSIDriverCinder
+	// CSIProvisioner is the configuration for the csi-provisioner
+	CSIProvisioner *CSIProvisioner
+	// CSIResizer is the configuration for the csi-resizer
+	CSIResizer *CSIResizer
+	// CSISnapshotController is the configuration for the csi-shapshot-controller
+	CSISnapshotController *CSISnapshotController
+	// CSISnapshotter is the configuration for the csi-snapshotter
+	CSISnapshotter *CSISnapshotter
+	// CSILivenessProbe is the configuration for the csi-liveness-probe
+	CSILivenessProbe *CSILivenessProbe
+}
+
+type CSIAttacher struct {
+	// RetryIntervalStart The exponential backoff for failures.
+	RetryIntervalStart *string
+	// RetryIntervalMax The exponential backoff maximum value.
+	RetryIntervalMax *string
+	// ReconcileSync Resync frequency of the attached volumes with the driver.
+	ReconcileSync *string
+	// Timeout Timeout of all calls to the container storage interface driver.
+	Timeout *string
+	// Verbose The verbosity level.
+	Verbose *string
+}
+
+type CSIDriverCinder struct {
+	// Timeout Timeout of all calls to the container storage interface driver.
+	Timeout *string
+	// Verbose The verbosity level.
+	Verbose *string
+}
+
+type CSILivenessProbe struct {
+	// Timeout Timeout of all calls to the container storage interface driver.
+	Timeout *string
+	// Verbose The verbosity level.
+	Verbose *string
+}
+
+type CSIProvisioner struct {
+	// Timeout Timeout of all calls to the container storage interface driver.
+	Timeout *string
+	// Verbose The verbosity level.
+	Verbose *string
+}
+
+type CSISnapshotter struct {
+	// Timeout Timeout of all calls to the container storage interface driver.
+	Timeout *string
+	// Verbose The verbosity level.
+	Verbose *string
+}
+
+type CSIResizer struct {
+	// CSITimeout Timeout of all calls to the container storage interface driver.
+	CSITimeout *string
+	// Verbose The verbosity level.
+	Verbose *string
+}
+
+type CSISnapshotController struct {
+	// Timeout Timeout of all calls to the container storage interface driver.
+	Timeout *string
+	// Verbose The verbosity level.
+	Verbose *string
 }
 
 // ETCDStorage is an etcd storage configuration.

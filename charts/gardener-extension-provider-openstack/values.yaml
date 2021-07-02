@@ -72,6 +72,13 @@ config:
       className: gardener.cloud-fast
       capacity: 25Gi
       provisioner: kubernetes.io/cinder
+  csi: {}
+#    csiAttacher:
+#      args:
+#        verbosity: 3
+#        retryIntervalStart: 1m
+#        retryIntervalMax: 15m
+#        reconcileSync: 5m
 
 gardener:
   version: ""

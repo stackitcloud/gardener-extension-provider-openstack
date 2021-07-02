@@ -15,6 +15,7 @@
 package controlplane
 
 import (
+	"github.com/gardener/gardener-extension-provider-openstack/pkg/apis/config"
 	"github.com/gardener/gardener-extension-provider-openstack/pkg/imagevector"
 	"github.com/gardener/gardener-extension-provider-openstack/pkg/openstack"
 
@@ -46,6 +47,8 @@ type AddOptions struct {
 	// UseProjectedTokenMount specifies whether the projected token mount shall be used for the
 	// control plane components.
 	UseProjectedTokenMount bool
+	// CSI is the config for the csi components
+	CSI *config.CSI
 }
 
 // AddToManagerWithOptions adds a controller with the given Options to the given manager.
@@ -55,7 +58,7 @@ func AddToManagerWithOptions(mgr manager.Manager, opts AddOptions) error {
 		Actuator: genericactuator.NewActuator(openstack.Name,
 			getSecretConfigsFuncs(opts.UseTokenRequestor), getShootAccessSecretsFunc(opts.UseTokenRequestor), getLegacySecretNamesToCleanup(opts.UseTokenRequestor), nil, nil, nil,
 			configChart, controlPlaneChart, controlPlaneShootChart, controlPlaneShootCRDsChart, storageClassChart, nil,
-			NewValuesProvider(logger, opts.UseTokenRequestor, opts.UseProjectedTokenMount), extensionscontroller.ChartRendererFactoryFunc(util.NewChartRendererForShoot),
+			NewValuesProvider(logger, opts.UseTokenRequestor, opts.UseProjectedTokenMount, opts.CSI), extensionscontroller.ChartRendererFactoryFunc(util.NewChartRendererForShoot),
 			imagevector.ImageVector(), "", nil, mgr.GetWebhookServer().Port, logger),
 		ControllerOptions: opts.Controller,
 		Predicates:        controlplane.DefaultPredicates(opts.IgnoreOperationAnnotation),
