@@ -45,7 +45,7 @@ spec:
         command:
         - /bin/yawol-cloud-controller
         - -target-kubeconfig=/var/lib/cloud-controller-manager/kubeconfig
-        - -enable-leader-election
+        - -leader-elect
         env:
         {{- if .Values.yawolNamespace }}
         - name: CLUSTER_NAMESPACE
