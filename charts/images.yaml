@@ -40,11 +40,11 @@ images:
 - name: yawol-controller
   sourceRepository: github.com/stackitcloud/yawol-controller
   repository: registry.ske.eu01.stackit.cloud/yawol/yawol-controller
-  tag: "v0.3.1"
+  tag: "v0.4.0"
 - name: yawol-cloud-controller
   sourceRepository: github.com/stackitcloud/yawol-cloud-controller
   repository: registry.ske.eu01.stackit.cloud/yawol/yawol-cloud-controller
-  tag: "v0.3.2"
+  tag: "v0.4.0"
 
 - name: csi-driver-cinder
   sourceRepository: github.com/kubernetes/cloud-provider-openstack
