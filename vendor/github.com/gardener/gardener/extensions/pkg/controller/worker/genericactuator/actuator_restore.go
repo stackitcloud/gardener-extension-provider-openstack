@@ -75,11 +75,6 @@ func (a *genericActuator) Restore(ctx context.Context, worker *extensionsv1alpha
 		return fmt.Errorf("failed to deploy the machine classes: %w", err)
 	}
 
-	// Deploy generated machine classes.
-	if err := workerDelegate.DeployMachineClasses(ctx); err != nil {
-		return errors.Wrapf(err, "failed to deploy the machine classes")
-	}
-
 	if err := kubernetes.WaitUntilDeploymentScaledToDesiredReplicas(ctx, a.client, kutil.Key(worker.Namespace, McmDeploymentName), 0); err != nil && !apierrors.IsNotFound(err) {
 		return fmt.Errorf("deadline exceeded while scaling down machine-controller-manager: %w", err)
 	}

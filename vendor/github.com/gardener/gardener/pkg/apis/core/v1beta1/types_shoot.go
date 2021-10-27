@@ -925,29 +925,6 @@ type Networking struct {
 	// Services is the CIDR of the service network.
 	// +optional
 	Services *string `json:"services,omitempty" protobuf:"bytes,5,opt,name=services"`
-	// FeatureGates Some random comment
-	// +optional
-	FeatureGates *FeatureGates `json:"featureGates,omitempty" protobuf:"bytes,6,opt,name=featureGates"`
-	// ProxyConfig
-	// +optional
-	ProxyConfig *ProxyConfig `json:"proxyConfig,omitempty" protobuf:"bytes,7,opt,name=proxyConfig"`
-}
-
-// ProxyConfig defines proxy settings for gardener components
-type ProxyConfig struct {
-	// HttpProxy defines the http proxy to use
-	// +optional
-	HttpProxy *string `json:"httpProxy,omitempty" protobuf:"bytes,1,opt,name=httpProxy"`
-	// NoProxy defines the destinations to reach without proxy
-	// +optional
-	NoProxy *string `json:"noProxy,omitempty" protobuf:"bytes,2,opt,name=noProxy"`
-}
-
-// FeatureGates Some random comment
-type FeatureGates struct {
-	// IPv6DualStack Some random comment
-	// +optional
-	IPv6DualStack *bool `json:"IPv6DualStack,omitempty" protobuf:"varint,1,opt,name=IPv6DualStack"`
 }
 
 const (
@@ -1041,9 +1018,6 @@ type Provider struct {
 	// +patchMergeKey=name
 	// +patchStrategy=merge
 	Workers []Worker `json:"workers" patchStrategy:"merge" patchMergeKey:"name" protobuf:"bytes,4,rep,name=workers"`
-	// ComponentResources
-	// +optional
-	ComponentResources map[string]corev1.ResourceRequirements `json:"componentResources,omitempty" protobuf:"bytes,5,rep,name=componentResources"`
 }
 
 // Worker is the base definition of a worker group.
@@ -1198,23 +1172,6 @@ type CRI struct {
 	// ContainerRuntimes is the list of the required container runtimes supported for a worker pool.
 	// +optional
 	ContainerRuntimes []ContainerRuntime `json:"containerRuntimes,omitempty" protobuf:"bytes,2,rep,name=containerRuntimes"`
-	// RegistryEndpoint defines a list of registry overrides
-	// +optional
-	Endpoints []RegistryEndpoint `json:"endpoints,omitempty" protobuf:"bytes,3,opt,name=endpoints"`
-	// DownloadHttpProxy defines a proxy that is used for downloading the kubelet and kubectl (only containerd)
-	// +optional
-	DownloadHttpProxy *string `json:"downloadHttpProxy,omitempty" protobuf:"bytes,4,opt,name=downloadHttpProxy"`
-}
-
-// RegistryEndpoint defines a list of registry overrides
-type RegistryEndpoint struct {
-	// Name defines the original registry url name
-	Name string `json:"name" protobuf:"string,1,opt,name=name"`
-	// Endpoint defines the endpoint where the image shall be pulled from
-	Endpoint string `json:"endpoint" protobuf:"string,2,opt,name=endpoint"`
-	// InsecureSkipVerify defines if tls certs shall be verified
-	// +optional
-	InsecureSkipVerify *bool `json:"insecureSkipVerify,omitempty" protobuf:"varint,3,opt,name=insecureSkipVerify"`
 }
 
 // CRIName is a type alias for the CRI name string.

@@ -51,4 +51,6 @@ replace (
 	k8s.io/component-base => k8s.io/component-base v0.21.2
 	k8s.io/helm => k8s.io/helm v2.13.1+incompatible
 	k8s.io/kube-aggregator => k8s.io/kube-aggregator v0.21.2
+
+	github.com/gardener/gardener v1.32.0 =>
 )

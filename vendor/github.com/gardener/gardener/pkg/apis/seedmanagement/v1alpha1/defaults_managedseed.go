@@ -17,8 +17,6 @@ package v1alpha1
 import (
 	"fmt"
 
-	"k8s.io/apimachinery/pkg/api/resource"
-
 	gardencorev1beta1 "github.com/gardener/gardener/pkg/apis/core/v1beta1"
 	"github.com/gardener/gardener/pkg/apis/seedmanagement/encoding"
 	configv1alpha1 "github.com/gardener/gardener/pkg/gardenlet/apis/config/v1alpha1"

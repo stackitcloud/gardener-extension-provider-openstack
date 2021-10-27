@@ -69,18 +69,6 @@ type CloudProfileSpec struct {
 	Type string
 	// VolumeTypes contains constraints regarding allowed values for volume types in the 'workers' block in the Shoot specification.
 	VolumeTypes []VolumeType
-	// MonitoringConfig contains settings for the monitoring stack
-	Monitoring MonitoringConfig
-}
-
-// MonitoringConfig contains settings for the monitoring stack
-type MonitoringConfig struct {
-	// RemoteWriteURL contains a Url for remote write
-	RemoteWriteURL string
-	// RemoteWriteURL contains a username for remote write
-	RemoteWriteUsername string
-	// RemoteWriteUsername contains a password for remote write
-	RemoteWritePassword string
 }
 
 // GetProviderType gets the type of the provider.
