@@ -19,6 +19,7 @@ import (
 	v1beta1constants "github.com/gardener/gardener/pkg/apis/core/v1beta1/constants"
 	"github.com/gardener/gardener/pkg/utils"
 	cidrvalidation "github.com/gardener/gardener/pkg/utils/validation/cidr"
+	"strings"
 
 	apiequality "k8s.io/apimachinery/pkg/api/equality"
 	apivalidation "k8s.io/apimachinery/pkg/api/validation"
@@ -94,13 +95,19 @@ func ValidateSeedSpec(seedSpec *core.SeedSpec, fldPath *field.Path, inTemplate b
 
 	var networks []cidrvalidation.CIDR
 	if !inTemplate || len(seedSpec.Networks.Pods) > 0 {
-		networks = append(networks, cidrvalidation.NewCIDR(seedSpec.Networks.Pods, networksPath.Child("pods")))
+		for _, cidrString := range strings.Split(seedSpec.Networks.Pods, ",") {
+			networks = append(networks, cidrvalidation.NewCIDR(cidrString, networksPath.Child("pods")))
+		}
 	}
 	if !inTemplate || len(seedSpec.Networks.Services) > 0 {
-		networks = append(networks, cidrvalidation.NewCIDR(seedSpec.Networks.Services, networksPath.Child("services")))
+		for _, cidrString := range strings.Split(seedSpec.Networks.Services, ",") {
+			networks = append(networks, cidrvalidation.NewCIDR(cidrString, networksPath.Child("services")))
+		}
 	}
 	if seedSpec.Networks.Nodes != nil {
-		networks = append(networks, cidrvalidation.NewCIDR(*seedSpec.Networks.Nodes, networksPath.Child("nodes")))
+		for _, cidrString := range strings.Split(*seedSpec.Networks.Nodes, ",") {
+			networks = append(networks, cidrvalidation.NewCIDR(cidrString, networksPath.Child("nodes")))
+		}
 	}
 	if shootDefaults := seedSpec.Networks.ShootDefaults; shootDefaults != nil {
 		if shootDefaults.Pods != nil {

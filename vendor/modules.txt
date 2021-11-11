@@ -50,7 +50,7 @@ github.com/gardener/etcd-druid/api/v1alpha1
 # github.com/gardener/external-dns-management v0.7.18
 github.com/gardener/external-dns-management/pkg/apis/dns
 github.com/gardener/external-dns-management/pkg/apis/dns/v1alpha1
-# github.com/gardener/gardener v1.32.0
+# github.com/gardener/gardener v1.32.0 => github.com/stackitcloud/gardener v1.32.1-ske-1
 ## explicit
 github.com/gardener/gardener/.github
 github.com/gardener/gardener/.github/ISSUE_TEMPLATE
@@ -422,6 +422,7 @@ github.com/pelletier/go-toml
 github.com/pierrec/lz4
 github.com/pierrec/lz4/internal/xxh32
 # github.com/pkg/errors v0.9.1
+## explicit
 github.com/pkg/errors
 # github.com/prometheus/client_golang v1.11.0 => github.com/prometheus/client_golang v1.11.0
 github.com/prometheus/client_golang/prometheus

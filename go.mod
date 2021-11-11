@@ -21,6 +21,7 @@ require (
 	github.com/onsi/ginkgo v1.16.4
 	github.com/onsi/gomega v1.13.0
 	github.com/pierrec/lz4 v2.5.1+incompatible // indirect
+	github.com/pkg/errors v0.9.1
 	github.com/sirupsen/logrus v1.7.0
 	github.com/spf13/cobra v1.1.3
 	github.com/spf13/pflag v1.0.5
@@ -52,5 +53,5 @@ replace (
 	k8s.io/helm => k8s.io/helm v2.13.1+incompatible
 	k8s.io/kube-aggregator => k8s.io/kube-aggregator v0.21.2
 
-	github.com/gardener/gardener v1.32.0 =>
+	github.com/gardener/gardener v1.32.0 => github.com/stackitcloud/gardener v1.32.1-ske-1
 )

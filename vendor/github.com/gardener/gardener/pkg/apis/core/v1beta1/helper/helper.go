@@ -268,6 +268,7 @@ type ShootedSeed struct {
 	WithSecretRef                   bool
 	FeatureGates                    map[string]bool
 	Resources                       *ShootedSeedResources
+	VerticalAutoscalerSettings     *gardencorev1beta1.SeedSettingVerticalPodAutoscaler
 }
 
 // ShootedSeedAPIServer contains the configuration of a shooted seed API server.
@@ -331,6 +332,12 @@ func parseShootedSeed(annotation string) (*ShootedSeed, error) {
 		return nil, err
 	}
 	shootedSeed.Backup = backup
+
+	verticalAutoscalerSettings, err := parseShootedSeedVerticalAutoscalerSettings(settings)
+	if err != nil {
+		return nil, err
+	}
+	shootedSeed.VerticalAutoscalerSettings = verticalAutoscalerSettings
 
 	seedProviderConfig, err := parseProviderConfig("providerConfig.", settings)
 	if err != nil {
@@ -614,6 +621,121 @@ func parseShootedSeedAPIServerAutoscaler(settings map[string]string) (*ShootedSe
 
 	return &apiServerAutoscaler, nil
 }
+
+func parseShootedSeedVerticalAutoscalerSettings(settings map[string]string) (*gardencorev1beta1.SeedSettingVerticalPodAutoscaler, error) {
+	var (
+		updaterInterval, ok1 = settings["vpa.updaterInterval"]
+		updaterEvictAfterOOMThreshold, ok2 = settings["vpa.updaterEvictAfterOOMThreshold"]
+		gardenletMinAllowedCpu, ok3 = settings["vpa.gardenletMinAllowed.cpu"]
+		gardenletMinAllowedMemory, ok4 = settings["vpa.gardenletMinAllowed.memory"]
+		gardenerResourceManagerMinAllowedCpu, ok5 = settings["vpa.gardenerResourceManagerMinAllowed.cpu"]
+		gardenerResourceManagerMinAllowedMemory, ok6 = settings["vpa.gardenerResourceManagerMinAllowed.memory"]
+		gardenerSeedAdmissionControllerMinAllowedCpu, ok7 = settings["vpa.gardenerSeedAdmissionController.cpu"]
+		gardenerSeedAdmissionControllerMinAllowedMemory, ok8 = settings["vpa.gardenerSeedAdmissionController.memory"]
+		aggregatePrometheusMinAllowedCpu, ok9 = settings["vpa.aggregatePrometheus.cpu"]
+		aggregatePrometheusMinAllowedMemory, ok10 = settings["vpa.aggregatePrometheus.memory"]
+		vpaUpdaterMinAllowedCpu, ok11 = settings["vpa.vpaUpdaterMinAllowed.cpu"]
+		vpaUpdaterMinAllowedMemory, ok12 = settings["vpa.vpaUpdaterMinAllowed.memory"]
+		vpaRecommenderMinAllowedCpu, ok13 = settings["vpa.vpaRecommenderMinAllowed.cpu"]
+		vpaRecommenderMinAllowedMemory, ok14 = settings["vpa.vpaRecommenderMinAllowed.memory"]
+		vpaExporterMinAllowedCpu, ok15 = settings["vpa.vpaExporterMinAllowed.cpu"]
+		vpaExporterMinAllowedMemory, ok16 = settings["vpa.vpaExporterMinAllowed.memory"]
+		vpaAdmissionControllerMinAllowedCpu, ok17 = settings["vpa.vpaAdmissionControllerMinAllowed.cpu"]
+		vpaAdmissionControllerMinAllowedMemory, ok18 = settings["vpa.vpaAdmissionControllerMinAllowed.memory"]
+	)
+
+
+	verticalPodAutoscaler := &gardencorev1beta1.SeedSettingVerticalPodAutoscaler{}
+
+	if ok1 {
+		verticalPodAutoscaler.UpdaterInterval = updaterInterval
+	}
+	if ok2 {
+		verticalPodAutoscaler.UpdaterEvictAfterOOMThreshold = updaterEvictAfterOOMThreshold
+	}
+	if ok3 || ok4 {
+		verticalPodAutoscaler.GardenletMinAllowed = &gardencorev1beta1.SeedSettingVerticalPodAutoscalerMinAllowed{}
+	}
+	if ok3 {
+		verticalPodAutoscaler.GardenletMinAllowed.Cpu = gardenletMinAllowedCpu
+	}
+	if ok4 {
+		verticalPodAutoscaler.GardenletMinAllowed.Memory = gardenletMinAllowedMemory
+	}
+
+	if ok5 || ok6 {
+		verticalPodAutoscaler.GardenerResourceManagerMinAllowed = &gardencorev1beta1.SeedSettingVerticalPodAutoscalerMinAllowed{}
+	}
+	if ok5 {
+		verticalPodAutoscaler.GardenerResourceManagerMinAllowed.Cpu = gardenerResourceManagerMinAllowedCpu
+	}
+	if ok6 {
+		verticalPodAutoscaler.GardenerResourceManagerMinAllowed.Memory = gardenerResourceManagerMinAllowedMemory
+	}
+
+	if ok7 || ok8 {
+		verticalPodAutoscaler.GardenerSeedAdmissionControllerMinAllowed = &gardencorev1beta1.SeedSettingVerticalPodAutoscalerMinAllowed{}
+	}
+	if ok7 {
+		verticalPodAutoscaler.GardenerSeedAdmissionControllerMinAllowed.Cpu = gardenerSeedAdmissionControllerMinAllowedCpu
+	}
+	if ok8 {
+		verticalPodAutoscaler.GardenerSeedAdmissionControllerMinAllowed.Memory = gardenerSeedAdmissionControllerMinAllowedMemory
+	}
+
+	if ok9 || ok10 {
+		verticalPodAutoscaler.AggregatePrometheusMinAllowed = &gardencorev1beta1.SeedSettingVerticalPodAutoscalerMinAllowed{}
+	}
+	if ok9 {
+		verticalPodAutoscaler.AggregatePrometheusMinAllowed.Cpu = aggregatePrometheusMinAllowedCpu
+	}
+	if ok10 {
+		verticalPodAutoscaler.AggregatePrometheusMinAllowed.Memory = aggregatePrometheusMinAllowedMemory
+	}
+
+	if ok11 || ok12 {
+		verticalPodAutoscaler.VpaUpdaterMinAllowed = &gardencorev1beta1.SeedSettingVerticalPodAutoscalerMinAllowed{}
+	}
+	if ok11 {
+		verticalPodAutoscaler.VpaUpdaterMinAllowed.Cpu = vpaUpdaterMinAllowedCpu
+	}
+	if ok12 {
+		verticalPodAutoscaler.VpaUpdaterMinAllowed.Memory = vpaUpdaterMinAllowedMemory
+	}
+
+	if ok13 || ok14 {
+		verticalPodAutoscaler.VpaRecommenderMinAllowed = &gardencorev1beta1.SeedSettingVerticalPodAutoscalerMinAllowed{}
+	}
+	if ok13 {
+		verticalPodAutoscaler.VpaRecommenderMinAllowed.Cpu = vpaRecommenderMinAllowedCpu
+	}
+	if ok14 {
+		verticalPodAutoscaler.VpaRecommenderMinAllowed.Memory = vpaRecommenderMinAllowedMemory
+	}
+
+	if ok15 || ok16 {
+		verticalPodAutoscaler.VpaExporterMinAllowed = &gardencorev1beta1.SeedSettingVerticalPodAutoscalerMinAllowed{}
+	}
+	if ok15 {
+		verticalPodAutoscaler.VpaExporterMinAllowed.Cpu = vpaExporterMinAllowedCpu
+	}
+	if ok16 {
+		verticalPodAutoscaler.VpaExporterMinAllowed.Memory = vpaExporterMinAllowedMemory
+	}
+
+	if ok17 || ok18 {
+		verticalPodAutoscaler.VpaAdmissionControllerMinAllowed = &gardencorev1beta1.SeedSettingVerticalPodAutoscalerMinAllowed{}
+	}
+	if ok17 {
+		verticalPodAutoscaler.VpaAdmissionControllerMinAllowed.Cpu = vpaAdmissionControllerMinAllowedCpu
+	}
+	if ok18 {
+		verticalPodAutoscaler.VpaAdmissionControllerMinAllowed.Memory = vpaAdmissionControllerMinAllowedMemory
+	}
+
+	return verticalPodAutoscaler, nil
+}
+
 
 func parseShootedSeedResources(settings map[string]string) (*ShootedSeedResources, error) {
 	var capacity, reserved corev1.ResourceList

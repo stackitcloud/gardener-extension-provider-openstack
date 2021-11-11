@@ -16,6 +16,7 @@ package validation
 
 import (
 	"fmt"
+	"k8s.io/utils/net"
 	"math"
 	"net/url"
 	"regexp"
@@ -742,29 +743,63 @@ func validateNetworking(networking core.Networking, fldPath *field.Path) field.E
 		allErrs = append(allErrs, field.Required(fldPath.Child("type"), "networking type must be provided"))
 	}
 
+	dualstack := false
+	if networking.Nodes != nil {
+		var err error
+		dualstack, err = net.IsDualStackCIDRStrings(strings.Split(*networking.Nodes, ","))
+		if err != nil {
+			allErrs = append(allErrs, field.Invalid(fldPath.Child("nodes"), networking.Nodes, "dualStack check error"))
+		}
+	}
+
 	if networking.Nodes != nil {
 		path := fldPath.Child("nodes")
-		cidr := cidrvalidation.NewCIDR(*networking.Nodes, path)
 
-		allErrs = append(allErrs, cidr.ValidateParse()...)
-		allErrs = append(allErrs, cidrvalidation.ValidateCIDRIsCanonical(path, cidr.GetCIDR())...)
+		// validate for dual-stack
+		if dualstack {
+			res, err := net.IsDualStackCIDRStrings(strings.Split(*networking.Nodes, ","))
+			if err != nil || !res {
+				allErrs = append(allErrs, field.Invalid(path, networking.Nodes, "when IPv6DualStack enabled, you have to define ipv4 and ipv6"))
+			}
+		} else { // validate for ipv4 single stack
+			cidr := cidrvalidation.NewCIDR(*networking.Nodes, path)
+			allErrs = append(allErrs, cidr.ValidateParse()...)
+			allErrs = append(allErrs, cidrvalidation.ValidateCIDRIsCanonical(path, cidr.GetCIDR())...)
+		}
 	}
 
 	if networking.Pods != nil {
 		path := fldPath.Child("pods")
-		cidr := cidrvalidation.NewCIDR(*networking.Pods, path)
+		// validate for dual-stack
+		if dualstack {
+			res, err := net.IsDualStackCIDRStrings(strings.Split(*networking.Pods, ","))
+			if err != nil || !res {
+				allErrs = append(allErrs, field.Invalid(path, networking.Pods, "when IPv6DualStack enabled, you have to define ipv4 and ipv6"))
+			}
 
-		allErrs = append(allErrs, cidr.ValidateParse()...)
-		allErrs = append(allErrs, cidrvalidation.ValidateCIDRIsCanonical(path, cidr.GetCIDR())...)
+		} else { // validate for ipv4 single stack
+			cidr := cidrvalidation.NewCIDR(*networking.Pods, path)
+			allErrs = append(allErrs, cidr.ValidateParse()...)
+			allErrs = append(allErrs, cidrvalidation.ValidateCIDRIsCanonical(path, cidr.GetCIDR())...)
+		}
 	}
 
 	if networking.Services != nil {
 		path := fldPath.Child("services")
-		cidr := cidrvalidation.NewCIDR(*networking.Services, path)
-
-		allErrs = append(allErrs, cidr.ValidateParse()...)
-		allErrs = append(allErrs, cidrvalidation.ValidateCIDRIsCanonical(path, cidr.GetCIDR())...)
+		// validate for dual-stack
+		if dualstack {
+			res, err := net.IsDualStackCIDRStrings(strings.Split(*networking.Services, ","))
+			if err != nil || !res {
+				allErrs = append(allErrs, field.Invalid(path, networking.Services, "when IPv6DualStack enabled, you have to define ipv4 and ipv6"))
+			}
+		} else { // validate for ipv4 single stack
+			cidr := cidrvalidation.NewCIDR(*networking.Services, path)
+			allErrs = append(allErrs, cidr.ValidateParse()...)
+			allErrs = append(allErrs, cidrvalidation.ValidateCIDRIsCanonical(path, cidr.GetCIDR())...)
+		}
 	}
+
+	// todo for networking.proxyConfig
 
 	return allErrs
 }

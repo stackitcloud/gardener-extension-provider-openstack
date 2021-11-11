@@ -134,7 +134,7 @@ const (
 	EndUserCrtValidity = 730 * 24 * time.Hour // ~2 years, see https://support.apple.com/en-us/HT210176
 
 	// ShootDNSIngressName is a constant for the DNS resources used for the shoot ingress addon.
-	ShootDNSIngressName = "ingress"
+	ShootDNSIngressName = "i"
 
 	// GardenLokiPriorityClassName is the name of the PriorityClass for the Loki in the garden namespace
 	GardenLokiPriorityClassName = "garden-loki"

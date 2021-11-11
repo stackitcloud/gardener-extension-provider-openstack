@@ -84,6 +84,40 @@ type CloudProfileSpec struct {
 	// +patchStrategy=merge
 	// +optional
 	VolumeTypes []VolumeType `json:"volumeTypes,omitempty" patchStrategy:"merge" patchMergeKey:"name" protobuf:"bytes,9,rep,name=volumeTypes"`
+	// MonitoringConfig contains settings for the monitoring stack
+	// +optional
+	Monitoring MonitoringConfig `json:"monitoring,omitempty" protobuf:"bytes,10,opt,name=monitoring"`
+}
+
+// MonitoringConfig contains settings for the monitoring stack
+type MonitoringConfig struct {
+	// RemoteWriteURL contains a Url for remote write
+	// +optional
+	RemoteWriteURL string `json:"remoteWriteURL,omitempty" protobuf:"bytes,1,opt,name=remoteWriteURL"`
+	// RemoteWriteURL contains a username for remote write
+	// +optional
+	RemoteWriteUsername string `json:"remoteWriteUsername,omitempty" protobuf:"bytes,2,opt,name=remoteWriteUsername"`
+	// RemoteWriteUsername contains a password for remote write
+	// +optional
+	RemoteWritePassword string `json:"remoteWritePassword,omitempty" protobuf:"bytes,3,opt,name=remoteWritePassword"`
+	// RemoteWriteName contains a name for the external write. This name will be appended as label
+	// +optional
+	RemoteWriteName string `json:"remoteWriteName,omitempty" protobuf:"bytes,4,opt,name=remoteWriteName"`
+	// RemoteWriteKeep contains a list of metrics that will be remote written
+	// +optional
+	RemoteWriteKeep []string `json:"remoteWriteKeep,omitempty" protobuf:"bytes,5,opt,name=remoteWriteKeep"`
+	// ExternalBlackboxExporterURL url of external blackbox exporter
+	// +optional
+	ExternalBlackboxExporterURL string `json:"externalBlackboxExporterURL,omitempty" protobuf:"bytes,6,opt,name=externalBlackboxExporterURL"`
+	// ExternalBlackboxExporterModule define the module used in target blackbox exporter
+	// +optional
+	ExternalBlackboxExporterModule string `json:"externalBlackboxExporterModule,omitempty" protobuf:"bytes,7,opt,name=externalBlackboxExporterModule"`
+	// ExternalBlackboxExporterUsername define a user for basic auth
+	// +optional
+	ExternalBlackboxExporterUsername string `json:"externalBlackboxExporterUsername,omitempty" protobuf:"bytes,8,opt,name=externalBlackboxExporterUsername"`
+	// ExternalBlackboxExporterPassword define a password for basic auth
+	// +optional
+	ExternalBlackboxExporterPassword string `json:"externalBlackboxExporterPassword,omitempty" protobuf:"bytes,9,opt,name=externalBlackboxExporterPassword"`
 }
 
 // SeedSelector contains constraints for selecting seed to be usable for shoots using a profile

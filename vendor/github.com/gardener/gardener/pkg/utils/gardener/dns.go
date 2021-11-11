@@ -47,7 +47,7 @@ const (
 	// IngressPrefix is the part of a FQDN which will be used to construct the domain name for an ingress controller of
 	// a Shoot cluster. For example, when a Shoot specifies domain 'cluster.example.com', the ingress domain would be
 	// '*.<IngressPrefix>.cluster.example.com'.
-	IngressPrefix = "ingress"
+	IngressPrefix = "i"
 	// InternalDomainKey is a key which must be present in an internal domain constructed for a Shoot cluster. If the
 	// configured internal domain already contains it, it won't be added twice. If it does not contain it, it will be
 	// appended.

@@ -232,6 +232,14 @@ message CRI {
   // ContainerRuntimes is the list of the required container runtimes supported for a worker pool.
   // +optional
   repeated ContainerRuntime containerRuntimes = 2;
+
+  // RegistryEndpoint defines a list of registry overrides
+  // +optional
+  repeated RegistryEndpoint endpoints = 3;
+
+  // DownloadHttpProxy defines a proxy that is used for downloading the kubelet and kubectl (only containerd)
+  // +optional
+  optional string downloadHttpProxy = 4;
 }
 
 // CloudInfo contains information about the cloud
@@ -309,6 +317,10 @@ message CloudProfileSpec {
   // +patchStrategy=merge
   // +optional
   repeated VolumeType volumeTypes = 9;
+
+  // MonitoringConfig contains settings for the monitoring stack
+  // +optional
+  optional MonitoringConfig monitoring = 10;
 }
 
 // ClusterAutoscaler contains the configuration flags for the Kubernetes cluster autoscaler.
@@ -1384,6 +1396,45 @@ message Monitoring {
   optional Alerting alerting = 1;
 }
 
+// MonitoringConfig contains settings for the monitoring stack
+message MonitoringConfig {
+  // RemoteWriteURL contains a Url for remote write
+  // +optional
+  optional string remoteWriteURL = 1;
+
+  // RemoteWriteURL contains a username for remote write
+  // +optional
+  optional string remoteWriteUsername = 2;
+
+  // RemoteWriteUsername contains a password for remote write
+  // +optional
+  optional string remoteWritePassword = 3;
+
+  // RemoteWriteName contains a name for the external write. This name will be appended as label
+  // +optional
+  optional string remoteWriteName = 4;
+
+  // RemoteWriteKeep contains a list of metrics that will be remote written
+  // +optional
+  repeated string remoteWriteKeep = 5;
+
+  // ExternalBlackboxExporterURL url of external blackbox exporter
+  // +optional
+  optional string externalBlackboxExporterURL = 6;
+
+  // ExternalBlackboxExporterModule define the module used in target blackbox exporter
+  // +optional
+  optional string externalBlackboxExporterModule = 7;
+
+  // ExternalBlackboxExporterUsername define a user for basic auth
+  // +optional
+  optional string externalBlackboxExporterUsername = 8;
+
+  // ExternalBlackboxExporterPassword define a password for basic auth
+  // +optional
+  optional string externalBlackboxExporterPassword = 9;
+}
+
 // NamedResourceReference is a named reference to a resource.
 message NamedResourceReference {
   // Name of the resource reference.
@@ -1683,6 +1734,10 @@ message Provider {
   // +patchMergeKey=name
   // +patchStrategy=merge
   repeated Worker workers = 4;
+
+  // ComponentResources
+  // +optional
+  map<string, k8s.io.api.core.v1.ResourceRequirements> componentResources = 5;
 }
 
 // Quota represents a quota on resources consumed by shoot clusters either per project or per provider secret.
@@ -1735,6 +1790,19 @@ message Region {
   // quality, reliability, access restrictions, etc.
   // +optional
   map<string, string> labels = 3;
+}
+
+// RegistryEndpoint defines a list of registry overrides
+message RegistryEndpoint {
+  // Name defines the original registry url name
+  optional string name = 1;
+
+  // Endpoint defines the endpoint where the image shall be pulled from
+  optional string endpoint = 2;
+
+  // InsecureSkipVerify defines if tls certs shall be verified
+  // +optional
+  optional bool insecureSkipVerify = 3;
 }
 
 // ResourceData holds the data of a resource referred to by an extension controller state.
@@ -1932,6 +2000,58 @@ message SeedSettingVerticalPodAutoscaler {
   // is enabled by default because Gardener heavily relies on a VPA being deployed. You should only disable this if
   // your seed cluster already has another, manually/custom managed VPA deployment.
   optional bool enabled = 1;
+
+  // UpdaterInterval set the Interval
+  // +optional
+  optional string updaterInterval = 2;
+
+  // UpdaterEvictAfterOOMThreshold set the Interval
+  // +optional
+  optional string updaterEvictAfterOOMThreshold = 3;
+
+  // GardenletMinAllowed set the VPA minAllowed settings for the gardenlet
+  // +optional
+  optional SeedSettingVerticalPodAutoscalerMinAllowed gardenletMinAllowed = 4;
+
+  // GardenerResourceManagerMinAllowed set the VPA minAllowed settings for the GardenerResourceManager
+  // +optional
+  optional SeedSettingVerticalPodAutoscalerMinAllowed gardenerResourceManagerMinAllowed = 5;
+
+  // GardenerSeedAdmissionControllerMinAllowed set the VPA minAllowed settings for the SeedAdmissionController
+  // +optional
+  optional SeedSettingVerticalPodAutoscalerMinAllowed gardenerSeedAdmissionControllerMinAllowed = 6;
+
+  // AggregatePrometheusMinAllowed set the VPA minAllowed settings for the AggregatePrometheus
+  // +optional
+  optional SeedSettingVerticalPodAutoscalerMinAllowed aggregatePrometheusMinAllowed = 7;
+
+  // VpaUpdaterMinAllowed set the VPA minAllowed settings for the VpaUpdater
+  // +optional
+  optional SeedSettingVerticalPodAutoscalerMinAllowed vpaUpdaterMinAllowed = 8;
+
+  // VpaRecommenderMinAllowed set the VPA minAllowed settings for the VpaRecommender
+  // +optional
+  optional SeedSettingVerticalPodAutoscalerMinAllowed vpaRecommenderMinAllowed = 9;
+
+  // VpaExporterMinAllowed set the VPA minAllowed settings for the VpaExporter
+  // +optional
+  optional SeedSettingVerticalPodAutoscalerMinAllowed vpaExporterMinAllowed = 10;
+
+  // VpaAdmissionControllerMinAllowed set the VPA minAllowed settings for the VpaAdmissionController
+  // +optional
+  optional SeedSettingVerticalPodAutoscalerMinAllowed vpaAdmissionControllerMinAllowed = 11;
+}
+
+// SeedSettingVerticalPodAutoscalerMinAllowed controls certain settings for the vertical pod autoscaler minAllowed values
+// seed.
+message SeedSettingVerticalPodAutoscalerMinAllowed {
+  // Memory Set the minAllowed memory for a component
+  // +optional
+  optional string memory = 1;
+
+  // Cpu Set the minAllowed cpu for a component
+  // +optional
+  optional string cpu = 2;
 }
 
 // SeedSettings contains certain settings for this seed cluster.
