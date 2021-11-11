@@ -5,9 +5,6 @@ podLabels: {}
 featureGates: {}
   # CustomResourceValidation: true
   # RotateKubeletServerCertificate: false
-proxy: {}
-#  http_proxy: "mytest.proxy:8118"
-#  no_proxy: "192.168.0.0/24"
 images:
   yawol-cloud-controller: image-repository:image-tag
 resources:

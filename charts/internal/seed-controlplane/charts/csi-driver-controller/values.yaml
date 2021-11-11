@@ -1,8 +1,5 @@
 replicas: 1
 podAnnotations: {}
-proxy: {}
-#  http_proxy: "mytest.proxy:8118"
-#  no_proxy: "192.168.0.0/24"
 
 images:
   csi-driver-cinder: image-repository:image-tag
