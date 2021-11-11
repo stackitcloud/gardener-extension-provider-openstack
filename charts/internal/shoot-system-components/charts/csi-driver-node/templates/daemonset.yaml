@@ -49,14 +49,6 @@ spec:
           valueFrom:
             fieldRef:
               fieldPath: spec.nodeName
-{{- if .Values.proxy.http_proxy }}
-        - name: http_proxy
-          value: {{ .Values.proxy.http_proxy }}
-{{- end }}
-{{- if .Values.proxy.no_proxy }}
-        - name: no_proxy
-          value: {{ .Values.proxy.no_proxy }}
-{{- end }}
 {{- if .Values.resources.driver }}
         resources:
 {{ toYaml .Values.resources.driver | indent 10 }}

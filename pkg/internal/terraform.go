@@ -102,24 +102,13 @@ func NewTerraformerWithAuth(
 	purpose string,
 	infra *extensionsv1alpha1.Infrastructure,
 	credentials *openstack.Credentials,
-	additionalEnvs map[string]string,
 ) (terraformer.Terraformer, error) {
 	tf, err := NewTerraformer(logger, restConfig, purpose, infra)
 	if err != nil {
 		return nil, err
 	}
 
-	var envs []corev1.EnvVar
-	envs = append(envs, TerraformerEnvVars(infra.Spec.SecretRef, credentials)...)
-
-	for key, value := range additionalEnvs {
-		envs = append(envs, corev1.EnvVar{
-			Name:  key,
-			Value: value,
-		})
-	}
-
-	return tf.SetEnvVars(envs...), nil
+	return tf.SetEnvVars(TerraformerEnvVars(infra.Spec.SecretRef, credentials)...), nil
 }
 
 func createEnvVar(secretRef corev1.SecretReference, name, key string) corev1.EnvVar {

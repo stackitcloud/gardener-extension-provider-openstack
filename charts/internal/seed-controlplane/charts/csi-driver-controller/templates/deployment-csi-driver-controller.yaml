@@ -52,18 +52,6 @@ spec:
         env:
         - name: CSI_ENDPOINT
           value: unix://{{ .Values.socketPath }}/csi.sock
-{{- if .Values.proxy.http_proxy }}
-        - name: http_proxy
-          value: {{ .Values.proxy.http_proxy }}
-{{- end }}
-{{- if .Values.proxy.no_proxy }}
-        - name: no_proxy
-          value: {{ .Values.proxy.no_proxy }}
-{{- end }}
-{{- if .Values.resources.driver }}
-        resources:
-{{ toYaml .Values.resources.driver | indent 10 }}
-{{- end }}
         ports:
         - name: healthz
           containerPort: 9808

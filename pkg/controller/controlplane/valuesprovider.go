@@ -607,7 +607,7 @@ func getConfigChartValues(
 		"subnetID":                    subnet.ID,
 		"authUrl":                     keyStoneURL,
 		"dhcpDomain":                  cloudProfileConfig.DHCPDomain,
-		"internalLB":                 cloudProfileConfig.InternalLB,
+		"internalLB":                  cloudProfileConfig.InternalLB,
 		"requestTimeout":              cloudProfileConfig.RequestTimeout,
 		"useOctavia":                  cloudProfileConfig.UseOctavia != nil && *cloudProfileConfig.UseOctavia,
 		"rescanBlockStorageOnResize":  cloudProfileConfig.RescanBlockStorageOnResize != nil && *cloudProfileConfig.RescanBlockStorageOnResize,
@@ -757,16 +757,6 @@ func getCCMChartValues(
 	checksums map[string]string,
 	scaledDown bool,
 ) (map[string]interface{}, error) {
-	var httpProxy *string
-	var noProxy *string
-	if proxyConfig := cluster.Shoot.Spec.Networking.ProxyConfig; proxyConfig != nil {
-		if proxyConfig.HttpProxy != nil {
-			httpProxy = proxyConfig.HttpProxy
-		}
-		if proxyConfig.NoProxy != nil {
-			noProxy = proxyConfig.NoProxy
-		}
-	}
 
 	kubeVersion, err := semver.NewVersion(cluster.Shoot.Spec.Kubernetes.Version)
 	if err != nil {
@@ -789,10 +779,6 @@ func getCCMChartValues(
 			v1beta1constants.LabelPodMaintenanceRestart: "true",
 		},
 		"tlsCipherSuites": kutil.TLSCipherSuites(kubeVersion),
-		"proxy": map[string]interface{}{
-			"http_proxy": httpProxy,
-			"no_proxy":   noProxy,
-		},
 	}
 
 	// disable service controller if yawol is enabled and useOctavia is not true
@@ -829,17 +815,6 @@ func getCSIControllerChartValues(
 		return map[string]interface{}{"enabled": false}, nil
 	}
 
-	var httpProxy *string
-	var noProxy *string
-	if proxyConfig := cluster.Shoot.Spec.Networking.ProxyConfig; proxyConfig != nil {
-		if proxyConfig.HttpProxy != nil {
-			httpProxy = proxyConfig.HttpProxy
-		}
-		if proxyConfig.NoProxy != nil {
-			noProxy = proxyConfig.NoProxy
-		}
-	}
-
 	var values = map[string]interface{}{
 		"enabled":  true,
 		"replicas": extensionscontroller.GetControlPlaneReplicas(cluster, scaledDown, 1),
@@ -855,10 +830,6 @@ func getCSIControllerChartValues(
 			"podAnnotations": map[string]interface{}{
 				"checksum/secret-" + openstack.CSISnapshotControllerName: checksums[openstack.CSISnapshotControllerName],
 			},
-		},
-		"proxy": map[string]interface{}{
-			"http_proxy": httpProxy,
-			"no_proxy":   noProxy,
 		},
 	}
 	if userAgentHeaders != nil {
@@ -922,17 +893,6 @@ func getControlPlaneShootChartValues(
 	cloudProviderDiskConfig []byte,
 	userAgentHeader []string,
 ) (map[string]interface{}, error) {
-	var httpProxy *string
-	var noProxy *string
-	if proxyConfig := cluster.Shoot.Spec.Networking.ProxyConfig; proxyConfig != nil {
-		if proxyConfig.HttpProxy != nil {
-			httpProxy = proxyConfig.HttpProxy
-		}
-		if proxyConfig.NoProxy != nil {
-			noProxy = proxyConfig.NoProxy
-		}
-	}
-
 	resources := make(map[string]corev1.ResourceRequirements)
 	if csiDriverNode, ok := cluster.Shoot.Spec.Provider.ComponentResources["csi-driver-node"]; ok {
 		resources["driver"] = csiDriverNode
@@ -946,11 +906,7 @@ func getControlPlaneShootChartValues(
 			"checksum/secret-" + openstack.CloudProviderCSIDiskConfigName: checksums[openstack.CloudProviderCSIDiskConfigName],
 		},
 		"cloudProviderConfig": cloudProviderDiskConfig,
-		"proxy": map[string]interface{}{
-			"http_proxy": httpProxy,
-			"no_proxy":   noProxy,
-		},
-		"resources": resources,
+		"resources":           resources,
 	}
 	if userAgentHeader != nil {
 		csiNodeDriverValues["userAgentHeaders"] = userAgentHeader
