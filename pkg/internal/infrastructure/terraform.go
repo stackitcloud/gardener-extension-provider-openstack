@@ -283,8 +283,8 @@ func StatusFromTerraformState(state *TerraformState) *apiv1alpha1.Infrastructure
 			Kind:       "InfrastructureStatus",
 		},
 		Networks: apiv1alpha1.NetworkStatus{
-			ID: state.NetworkID,
-			IDv6:         state.NetworkIDv6,
+			ID:   state.NetworkID,
+			IDv6: state.NetworkIDv6,
 			FloatingPool: apiv1alpha1.FloatingPoolStatus{
 				ID: state.FloatingNetworkID,
 			},
