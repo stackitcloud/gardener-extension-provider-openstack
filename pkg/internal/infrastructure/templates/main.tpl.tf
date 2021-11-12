@@ -28,7 +28,7 @@ data "openstack_networking_subnet_ids_v2" "fip_subnets" {
 }
 {{- end }}
 
-resource "openstack_networking_router_v2" "router" {
+resource "openstack_networking_router_v2" "router-v4" {
   name                = "{{ .clusterName }}"
   region              = "{{ .openstack.region }}"
   external_network_id = data.openstack_networking_network_v2.fip.id
@@ -37,7 +37,7 @@ resource "openstack_networking_router_v2" "router" {
   {{- end }}
   {{ if .router.floatingPoolSubnet -}}
   external_subnet_ids = data.openstack_networking_subnet_ids_v2.fip_subnets.ids
-  {{- end }}d
+  {{- end }}
 }
 {{ if .Values.networks.externalNetworkID }}
 resource "openstack_networking_router_v2" "router-v6" {
@@ -144,7 +144,7 @@ subnetpool_id = {{ .Values.networks.subnetPoolID | quote }}
 
 
 resource "openstack_networking_router_interface_v2" "router_nodes_v4" {
-router_id = "${openstack_networking_router_v2.router.id}"
+router_id = "${openstack_networking_router_v2.router-v4.id}"
 subnet_id = "${openstack_networking_subnet_v2.cluster-v4.id}"
 }
 
