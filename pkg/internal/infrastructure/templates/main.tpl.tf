@@ -41,8 +41,8 @@ resource "openstack_networking_router_v2" "router" {
 }
 {{ if .Values.networks.externalNetworkID }}
 resource "openstack_networking_router_v2" "router-v6" {
-  name                = "{{ required "clusterName is required" .Values.clusterName }}-v6"
-  region              = "{{ required "openstack.region is required" .Values.openstack.region }}"
+  name                = "{{ .Values.clusterName }}-v6"
+  region              = "{{ .Values.openstack.region }}"
   external_network_id = {{ .Values.networks.externalNetworkID | quote }}
 }
 {{- end }}
@@ -62,7 +62,7 @@ network_id = "{{ .networks.id }}"
 {{ if .Values.networks.dualHomed }}
 # IPv6 Network in dual homed mode
 resource "openstack_networking_network_v2" "cluster-v6" {
-name           = "{{ required "clusterName is required" .Values.clusterName }}"
+name           = "{{ .Values.clusterName }}"
 admin_state_up = "true"
 }
 {{- end}}
@@ -82,13 +82,9 @@ resource "openstack_networking_subnet_v2" "cluster" {
 
 {{ if .networks.nodeIPv6 }}
 resource "openstack_networking_subnet_v2" "cluster-v6" {
-  name            = "{{ required "clusterName is required" .Values.clusterName }}-v6"
-  cidr            = "{{ required "networks.workers is required" .Values.networks.nodeIPv6 }}"
-  {{ if .Values.networks.dualHomed }}
-  network_id      = "${openstack_networking_network_v2.cluster-v6.id}"
-  {{- else }}
-  network_id      = "${openstack_networking_network_v2.cluster.id}"
-  {{- end }}
+  name            = "{{ .Values.clusterName }}-v6"
+  cidr            = "{{ .Values.networks.nodeIPv6 }}"
+  network_id      = {{ template "network-id" $ }}
 
   ip_version      = 6
   ipv6_ra_mode      = "dhcpv6-stateful"
@@ -97,7 +93,7 @@ resource "openstack_networking_subnet_v2" "cluster-v6" {
   dns_nameservers = []
 
   {{ if .Values.networks.subnetPoolID }}
-  subnetpool_id = {{ required "subnetPoolID must be nil or valid" .Values.networks.subnetPoolID | quote }}
+  subnetpool_id = {{ "subnetPoolID must be nil or valid" .Values.networks.subnetPoolID | quote }}
   {{- end}}
 }
 {{- end}}
@@ -122,7 +118,7 @@ resource "openstack_networking_subnet_v2" "services-v6" {
   dns_nameservers = []
 
   {{ if .Values.networks.subnetPoolID }}
-  subnetpool_id = {{ required "subnetPoolID must be nil or valid" .Values.networks.subnetPoolID | quote }}
+  subnetpool_id = {{ .Values.networks.subnetPoolID | quote }}
   {{- end}}
 }
 {{- end}}
@@ -141,7 +137,7 @@ ipv6_address_mode = "dhcpv6-stateful"
 dns_nameservers = []
 
 {{ if .Values.networks.subnetPoolID }}
-subnetpool_id = {{ required "subnetPoolID must be nil or valid" .Values.networks.subnetPoolID | quote }}
+subnetpool_id = {{ .Values.networks.subnetPoolID | quote }}
 {{- end}}
 }
 {{- end}}
@@ -154,11 +150,7 @@ subnet_id = "${openstack_networking_subnet_v2.cluster-v4.id}"
 
 {{- if .networks.nodeIPv6 }}
 resource "openstack_networking_router_interface_v2" "router_nodes_v6" {
-{{ if and .create.router .networks.externalNetworkID }}
 router_id = "${openstack_networking_router_v2.router-v6.id}"
-{{ else }}
-router_id = "{{ required "router.id is required" $.Values.router.id }}"
-{{ end }}
 subnet_id = "${openstack_networking_subnet_v2.cluster-v6.id}"
 }
 {{- end }}
@@ -264,9 +256,9 @@ output "{{ .outputKeys.keyName }}" {
 
 output "{{ .outputKeys.networkIDv6 }}" {
 {{ if .Values.networks.dualHomed }}
-value = "${openstack_networking_network_v2.cluster-v6.id}"
+value = "{{ .openstack_networking_network_v2.cluster-v6.id }}"
 {{- else }}
-value = "${openstack_networking_network_v2.cluster.id}"
+value = "{{ openstack_networking_network_v2.cluster.id }}"
 {{- end }}
 }
 
