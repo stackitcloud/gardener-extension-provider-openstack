@@ -37,7 +37,7 @@ resource "openstack_networking_router_v2" "router" {
   {{- end }}
   {{ if .router.floatingPoolSubnet -}}
   external_subnet_ids = data.openstack_networking_subnet_ids_v2.fip_subnets.ids
-  {{- end }}
+  {{- end }}d
 }
 {{ if .Values.networks.externalNetworkID }}
 resource "openstack_networking_router_v2" "router-v6" {
@@ -67,7 +67,7 @@ admin_state_up = "true"
 }
 {{- end}}
 
-resource "openstack_networking_subnet_v2" "cluster" {
+resource "openstack_networking_subnet_v2" "cluster-v4" {
   name            = "{{ .clusterName }}"
   cidr            = "{{ .networks.workers }}"
   network_id      = {{ template "network-id" $ }}
