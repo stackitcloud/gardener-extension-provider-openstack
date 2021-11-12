@@ -254,14 +254,6 @@ output "{{ .outputKeys.keyName }}" {
   value = openstack_compute_keypair_v2.ssh_key.name
 }
 
-output "{{ .outputKeys.networkIDv6 }}" {
-{{ if .Values.networks.dualHomed }}
-value = "{{ .openstack_networking_network_v2.cluster-v6.id }}"
-{{- else }}
-value = "{{ openstack_networking_network_v2.cluster.id }}"
-{{- end }}
-}
-
 output "{{ .outputKeys.securityGroupID }}" {
   value = openstack_networking_secgroup_v2.cluster.id
 }
