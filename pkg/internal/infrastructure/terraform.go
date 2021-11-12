@@ -40,8 +40,7 @@ const (
 	// TerraformOutputKeyRouterID is the id the router between provider network and the worker subnet.
 	TerraformOutputKeyRouterID = "router_id"
 	// TerraformOutputKeyNetworkID is the private worker network.
-	TerraformOutputKeyNetworkID   = "network_id"
-	TerraformOutputKeyNetworkIDv6 = "network_id_v6"
+	TerraformOutputKeyNetworkID = "network_id"
 	// TerraformOutputKeySecurityGroupID is the id of worker security group.
 	TerraformOutputKeySecurityGroupID = "security_group_id"
 	// TerraformOutputKeySecurityGroupName is the name of the worker security group.
@@ -78,7 +77,6 @@ func ComputeTerraformerTemplateValues(
 		outputKeysConfig = map[string]interface{}{
 			"routerID":          TerraformOutputKeyRouterID,
 			"networkID":         TerraformOutputKeyNetworkID,
-			"networkIDv6":       TerraformOutputKeyNetworkIDv6,
 			"keyName":           TerraformOutputKeySSHKeyName,
 			"securityGroupID":   TerraformOutputKeySecurityGroupID,
 			"securityGroupName": TerraformOutputKeySecurityGroupName,
@@ -148,9 +146,8 @@ func ComputeTerraformerTemplateValues(
 		}
 	}
 
-
 	networksConfig := map[string]interface{}{
-		"workers": workersCIDR,
+		"workers":           workersCIDR,
 		"nodeIPv4":          nodesIPv4,
 		"nodeIPv6":          nodesIPv6,
 		"dualHomed":         config.Networks.DualHomed,
@@ -258,7 +255,6 @@ func ExtractTerraformState(ctx context.Context, tf terraformer.Terraformer) (*Te
 		TerraformOutputKeySSHKeyName,
 		TerraformOutputKeyRouterID,
 		TerraformOutputKeyNetworkID,
-		TerraformOutputKeyNetworkIDv6,
 		TerraformOutputKeySubnetID,
 		TerraformOutputKeySubnetIDv6,
 		TerraformOutputKeyFloatingNetworkID,
@@ -275,7 +271,6 @@ func ExtractTerraformState(ctx context.Context, tf terraformer.Terraformer) (*Te
 		SSHKeyName:        vars[TerraformOutputKeySSHKeyName],
 		RouterID:          vars[TerraformOutputKeyRouterID],
 		NetworkID:         vars[TerraformOutputKeyNetworkID],
-		NetworkIDv6:       vars[TerraformOutputKeyNetworkIDv6],
 		SubnetID:          vars[TerraformOutputKeySubnetID],
 		SubnetIDv6:        vars[TerraformOutputKeySubnetIDv6],
 		FloatingNetworkID: vars[TerraformOutputKeyFloatingNetworkID],
