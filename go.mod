@@ -40,7 +40,10 @@ require (
 )
 
 replace (
+
+	github.com/gardener/gardener v1.32.0 => github.com/stackitcloud/gardener v1.32.1-ske-1
 	github.com/gardener/gardener-resource-manager/api => github.com/gardener/gardener-resource-manager/api v0.25.0
+	github.com/gardener/machine-controller-manager v0.36.0 => github.com/stackitcloud/machine-controller-manager v0.39.0-ske-2
 	github.com/prometheus/client_golang => github.com/prometheus/client_golang v1.11.0 // keep this value in sync with sigs.k8s.io/controller-runtime
 	k8s.io/api => k8s.io/api v0.21.2
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.21.2
@@ -52,6 +55,4 @@ replace (
 	k8s.io/component-base => k8s.io/component-base v0.21.2
 	k8s.io/helm => k8s.io/helm v2.13.1+incompatible
 	k8s.io/kube-aggregator => k8s.io/kube-aggregator v0.21.2
-
-	github.com/gardener/gardener v1.32.0 => github.com/stackitcloud/gardener v1.32.1-ske-1
 )

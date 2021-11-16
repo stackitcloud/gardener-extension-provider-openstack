@@ -218,6 +218,92 @@ bool
 </tr>
 <tr>
 <td>
+<code>useYAWOL</code></br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>UseYAWOL specifies whether the YAWOL load balancing is used. ignored if UseOctavia is true</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>yawolMigrateFromOctavia</code></br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>YAWOLMigrateFromOctavia specifies that yawol should mograte from octavia. ignored if UseYAWOL is not true</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>yawolDebug</code></br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>YAWOLDebug add debug flag to yawol-controller</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>yawolImageID</code></br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>YAWOLImageID specifies the openstack image for yawollet. Must set if UseYAWOL is set</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>yawolFlavorID</code></br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>YAWOLFlavorID specifies the openstack flavor for yawollet. Must set if UseYAWOL is set</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>internal_lb</code></br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>InternalLB determines whether or not to create an internal load balancer (no floating IP) by default.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>storageClasses</code></br>
+<em>
+<a href="#openstack.provider.extensions.gardener.cloud/v1alpha1.StorageClassDefinition">
+[]StorageClassDefinition
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>StorageClasses defines storageclasses for the shoot</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>resolvConfOptions</code></br>
 <em>
 []string
@@ -1087,6 +1173,16 @@ string
 </tr>
 <tr>
 <td>
+<code>idv6</code></br>
+<em>
+string
+</em>
+</td>
+<td>
+</td>
+</tr>
+<tr>
+<td>
 <code>floatingPool</code></br>
 <em>
 <a href="#openstack.provider.extensions.gardener.cloud/v1alpha1.FloatingPoolStatus">
@@ -1190,6 +1286,54 @@ string
 <td>
 <em>(Optional)</em>
 <p>ID is the ID of an existing private network.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>dualHomed</code></br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>This flag indicates if one or two L2 networks shall be created</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>subnetPoolID</code></br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>SubnetPoolID</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>externalNetworkID</code></br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>ExternalNetworkID is the default gateway network for ipv6 network router</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>dnsServers</code></br>
+<em>
+[]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>DNSServers overrides the default dns configuration from cloud profile</p>
 </td>
 </tr>
 </tbody>
@@ -1468,6 +1612,108 @@ string
 </td>
 <td>
 <p>Name is the name of the server group</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="openstack.provider.extensions.gardener.cloud/v1alpha1.StorageClassDefinition">StorageClassDefinition
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#openstack.provider.extensions.gardener.cloud/v1alpha1.CloudProfileConfig">CloudProfileConfig</a>)
+</p>
+<p>
+<p>StorageClassDefinition is a definition of a storageClass</p>
+</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>name</code></br>
+<em>
+string
+</em>
+</td>
+<td>
+<p>Name is the name of the storageclass</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>default</code></br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Default set the storageclass to the default one</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>provisioner</code></br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Provisioner set the Provisioner inside the storageclass</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>parameters</code></br>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Parameters adds parameters to the storageclass (storageclass.parameters)</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>annotations</code></br>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Annotations sets annotations for the storageclass</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>labels</code></br>
+<em>
+map[string]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Labels sets annotations for the storageclass</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>reclaimPolicy</code></br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>ReclaimPolicy sets reclaimPolicy for the storageclass</p>
 </td>
 </tr>
 </tbody>
