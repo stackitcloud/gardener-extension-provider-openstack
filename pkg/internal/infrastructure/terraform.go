@@ -146,15 +146,25 @@ func ComputeTerraformerTemplateValues(
 		}
 	}
 
+	externalNetworkID := ""
+	if config.Networks.ExternalNetworkID != nil {
+		externalNetworkID = *config.Networks.ExternalNetworkID
+	}
+
+	subnetPoolID := ""
+	if config.Networks.SubnetPoolID != nil {
+		subnetPoolID = *config.Networks.SubnetPoolID
+	}
+
 	networksConfig := map[string]interface{}{
 		"workers":           nodesIPv4,
 		"nodeIPv4":          nodesIPv4,
 		"nodeIPv6":          nodesIPv6,
 		"dualHomed":         config.Networks.DualHomed,
-		"subnetPoolID":      *config.Networks.SubnetPoolID,
+		"subnetPoolID":      subnetPoolID,
 		"serviceV6CIDR":     serviceCidr,
 		"podV6CIDR":         podCidr,
-		"externalNetworkID": *config.Networks.ExternalNetworkID,
+		"externalNetworkID": externalNetworkID,
 	}
 	if config.Networks.ID != nil {
 		createNetwork = false
