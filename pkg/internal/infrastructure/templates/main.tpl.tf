@@ -39,11 +39,11 @@ resource "openstack_networking_router_v2" "router" {
   external_subnet_ids = data.openstack_networking_subnet_ids_v2.fip_subnets.ids
   {{- end }}
 }
-{{ if .Values.networks.externalNetworkID }}
+{{ if .networks.externalNetworkID }}
 resource "openstack_networking_router_v2" "router-v6" {
-  name                = "{{ .Values.clusterName }}-v6"
-  region              = "{{ .Values.openstack.region }}"
-  external_network_id = {{ .Values.networks.externalNetworkID | quote }}
+  name                = "{{ .clusterName }}-v6"
+  region              = "{{ .openstack.region }}"
+  external_network_id = {{ .networks.externalNetworkID | quote }}
 }
 {{- end }}
 {{- end}}
@@ -59,10 +59,10 @@ network_id = "{{ .networks.id }}"
 }
 {{- end }}
 
-{{ if .Values.networks.dualHomed }}
+{{ if .networks.dualHomed }}
 # IPv6 Network in dual homed mode
 resource "openstack_networking_network_v2" "cluster-v6" {
-name           = "{{ .Values.clusterName }}"
+name           = "{{ .clusterName }}"
 admin_state_up = "true"
 }
 {{- end}}
@@ -72,7 +72,7 @@ resource "openstack_networking_subnet_v2" "cluster-v4" {
   cidr            = "{{ .networks.workers }}"
   network_id      = {{ template "network-id" $ }}
   ip_version      = 4
-  {{- if .Values.dnsServers }}
+  {{- if .dnsServers }}
   dns_nameservers = [{{- dnsServers .dnsServers | trimSuffix ", " }}]
   {{- else }}
   dns_nameservers = []
@@ -82,8 +82,8 @@ resource "openstack_networking_subnet_v2" "cluster-v4" {
 
 {{ if .networks.nodeIPv6 }}
 resource "openstack_networking_subnet_v2" "cluster-v6" {
-  name            = "{{ .Values.clusterName }}-v6"
-  cidr            = "{{ .Values.networks.nodeIPv6 }}"
+  name            = "{{ .clusterName }}-v6"
+  cidr            = "{{ .networks.nodeIPv6 }}"
   network_id      = {{ template "network-id" $ }}
 
   ip_version      = 6
@@ -92,8 +92,8 @@ resource "openstack_networking_subnet_v2" "cluster-v6" {
 
   dns_nameservers = []
 
-  {{ if .Values.networks.subnetPoolID }}
-  subnetpool_id = {{ "subnetPoolID must be nil or valid" .Values.networks.subnetPoolID | quote }}
+  {{ if .networks.subnetPoolID }}
+  subnetpool_id = {{ .networks.subnetPoolID | quote }}
   {{- end}}
 }
 {{- end}}
@@ -117,13 +117,13 @@ resource "openstack_networking_subnet_v2" "services-v6" {
 
   dns_nameservers = []
 
-  {{ if .Values.networks.subnetPoolID }}
-  subnetpool_id = {{ .Values.networks.subnetPoolID | quote }}
+  {{ if .networks.subnetPoolID }}
+  subnetpool_id = {{ .networks.subnetPoolID | quote }}
   {{- end}}
 }
 {{- end}}
 
-{{ if or .Values.networks.podV6CIDR }}
+{{ if or .networks.podV6CIDR }}
 ## For reservation in subnet pool
 resource "openstack_networking_subnet_v2" "pods-v6" {
 name            = "{{ .clusterName }}-pod-v6"
@@ -136,8 +136,8 @@ ipv6_address_mode = "dhcpv6-stateful"
 
 dns_nameservers = []
 
-{{ if .Values.networks.subnetPoolID }}
-subnetpool_id = {{ .Values.networks.subnetPoolID | quote }}
+{{ if .networks.subnetPoolID }}
+subnetpool_id = {{ .networks.subnetPoolID | quote }}
 {{- end}}
 }
 {{- end}}
@@ -266,7 +266,7 @@ output "{{ .outputKeys.subnetID }}" {
 }
 
 output "{{ .outputKeys.subnetIDv6 }}" {
-{{ if .Values.networks.dualHomed }}
+{{ if .networks.dualHomed }}
 value = openstack_networking_subnet_v2.cluster-v6.id
 {{- else }}
 value = openstack_networking_subnet_v2.cluster-v4.id
