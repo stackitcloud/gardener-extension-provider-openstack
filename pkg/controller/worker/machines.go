@@ -99,7 +99,12 @@ func (w *workerDelegate) generateMachineConfig(ctx context.Context) error {
 		return err
 	}
 
+	// keep because of backward compatibility
 	subnet, err := helper.FindSubnetByPurpose(infrastructureStatus.Networks.Subnets, api.PurposeNodes)
+	if err != nil {
+		return err
+	}
+	subnets, err := helper.FindSubnetsByPurpose(infrastructureStatus.Networks.Subnets, api.PurposeNodes)
 	if err != nil {
 		return err
 	}
@@ -164,6 +169,7 @@ func (w *workerDelegate) generateMachineConfig(ctx context.Context) error {
 			}
 
 			machineClassSpec["subnetID"] = subnet.ID
+			machineClassSpec["subnetIDs"] = subnets
 
 			if volumeSize > 0 {
 				machineClassSpec["rootDiskSize"] = volumeSize

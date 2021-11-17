@@ -44,6 +44,7 @@ providerSpec:
 {{- end }}
     networkID: {{ $machineClass.networkID }}
     subnetID: {{ $machineClass.subnetID }}
+    subnetIDs: {{ $machineClass.subnetIDs }}
     networkIDv6: {{ $machineClass.networkIDv6 }}
     podNetworkCidr: {{ $machineClass.podNetworkCidr }}
 {{- if $machineClass.rootDiskSize }}
