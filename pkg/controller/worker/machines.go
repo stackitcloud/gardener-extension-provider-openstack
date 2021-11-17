@@ -17,11 +17,11 @@ package worker
 import (
 	"context"
 	"fmt"
-	"path/filepath"
-
 	api "github.com/gardener/gardener-extension-provider-openstack/pkg/apis/openstack"
 	"github.com/gardener/gardener-extension-provider-openstack/pkg/apis/openstack/helper"
 	"github.com/gardener/gardener-extension-provider-openstack/pkg/openstack"
+	"path/filepath"
+	"sigs.k8s.io/controller-runtime/pkg/log"
 
 	extensionscontroller "github.com/gardener/gardener/extensions/pkg/controller"
 	"github.com/gardener/gardener/extensions/pkg/controller/worker"
@@ -76,6 +76,7 @@ func (w *workerDelegate) GenerateMachineDeployments(ctx context.Context) (worker
 }
 
 func (w *workerDelegate) generateMachineConfig(ctx context.Context) error {
+	logger := log.Log.WithName("generateMachineConfig:")
 	var (
 		machineDeployments = worker.MachineDeployments{}
 		machineClasses     []map[string]interface{}
@@ -99,7 +100,7 @@ func (w *workerDelegate) generateMachineConfig(ctx context.Context) error {
 		return err
 	}
 
-	fmt.Printf("generateMachineConfig(): infrastructureStatus: %v", infrastructureStatus)
+	logger.V(1).Info("generateMachineConfig()", "infrastructureStatus", infrastructureStatus)
 
 	// keep because of backward compatibility
 	subnet, err := helper.FindSubnetByPurpose(infrastructureStatus.Networks.Subnets, api.PurposeNodes)
@@ -110,7 +111,7 @@ func (w *workerDelegate) generateMachineConfig(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	fmt.Printf("generateMachineConfig(): subnets: %v", subnets)
+	logger.V(1).Info("generateMachineConfig()", "subnets", subnets)
 
 	for _, pool := range w.worker.Spec.Pools {
 		zoneLen := int32(len(pool.Zones))
