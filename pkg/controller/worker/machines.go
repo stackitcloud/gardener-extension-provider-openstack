@@ -99,6 +99,8 @@ func (w *workerDelegate) generateMachineConfig(ctx context.Context) error {
 		return err
 	}
 
+	fmt.Printf("generateMachineConfig(): infrastructureStatus: %v", infrastructureStatus)
+
 	// keep because of backward compatibility
 	subnet, err := helper.FindSubnetByPurpose(infrastructureStatus.Networks.Subnets, api.PurposeNodes)
 	if err != nil {
@@ -108,6 +110,7 @@ func (w *workerDelegate) generateMachineConfig(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
+	fmt.Printf("generateMachineConfig(): subnets: %v", subnets)
 
 	for _, pool := range w.worker.Spec.Pools {
 		zoneLen := int32(len(pool.Zones))
@@ -174,6 +177,7 @@ func (w *workerDelegate) generateMachineConfig(ctx context.Context) error {
 			for _, subnet := range subnets {
 				subnetIDs = append(subnetIDs, subnet.ID)
 			}
+			fmt.Printf("generateMachineConfig(): subnetIDs: %v", subnetIDs)
 			machineClassSpec["subnetIDs"] = subnetIDs
 
 			if volumeSize > 0 {
