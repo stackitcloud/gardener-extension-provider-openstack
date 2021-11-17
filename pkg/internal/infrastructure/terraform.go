@@ -294,7 +294,8 @@ func ExtractTerraformState(ctx context.Context, tf terraformer.Terraformer) (*Te
 func StatusFromTerraformState(state *TerraformState) *apiv1alpha1.InfrastructureStatus {
 	var subnets = make([]apiv1alpha1.Subnet, 0)
 
-	if state.SubnetIDv6 != "" {
+	// state.SubnetID != state.SubnetIDv6 is to mitigate the workaround used in main.tpl.tf for output key .outputKeys.subnetIDv6
+	if state.SubnetIDv6 != "" && state.SubnetID != state.SubnetIDv6 {
 		subnetv6 := apiv1alpha1.Subnet{
 			Purpose: apiv1alpha1.PurposeNodes,
 			ID:      state.SubnetIDv6,
