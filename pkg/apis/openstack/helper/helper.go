@@ -40,11 +40,11 @@ func FindSubnetsByPurpose(subnets []api.Subnet, purpose api.Purpose) ([]api.Subn
 	var subnetList = make([]api.Subnet, 0)
 	for _, subnet := range subnets {
 		if subnet.Purpose == purpose {
-			subnets = append(subnets, subnet)
+			subnetList = append(subnetList, subnet)
 		}
 	}
 
-	if len(subnets) == 0 {
+	if len(subnetList) == 0 {
 		return nil, fmt.Errorf("cannot find subnet with purpose %q", purpose)
 	}
 	return subnetList, nil
