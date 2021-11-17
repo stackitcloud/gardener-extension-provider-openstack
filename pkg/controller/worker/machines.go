@@ -107,6 +107,10 @@ func (w *workerDelegate) generateMachineConfig(ctx context.Context) error {
 		return err
 	}
 
+	if true {
+		return fmt.Errorf("FML!!! subnets: %v", subnets)
+	}
+
 	for _, pool := range w.worker.Spec.Pools {
 		zoneLen := int32(len(pool.Zones))
 
