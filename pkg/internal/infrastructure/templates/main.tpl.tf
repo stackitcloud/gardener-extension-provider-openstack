@@ -265,14 +265,11 @@ output "{{ .outputKeys.subnetID }}" {
   value = openstack_networking_subnet_v2.cluster-v4.id
 }
 
+{{- if .networks.nodeIPv6 }}
 output "{{ .outputKeys.subnetIDv6 }}" {
-{{ if .networks.dualHomed }}
-value = openstack_networking_subnet_v2.cluster-v6.id
-{{- else }}
-value = openstack_networking_subnet_v2.cluster-v4.id
-{{- end }}
+  value = openstack_networking_subnet_v2.cluster-v6.id
 }
-
+{{- end }}
 
 // Helpers
 

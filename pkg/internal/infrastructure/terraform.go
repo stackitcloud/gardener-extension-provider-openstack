@@ -282,6 +282,16 @@ func ExtractTerraformState(ctx context.Context, tf terraformer.Terraformer) (*Te
 // StatusFromTerraformState computes an InfrastructureStatus from the given
 // Terraform variables.
 func StatusFromTerraformState(state *TerraformState) *apiv1alpha1.InfrastructureStatus {
+	var subnet []apiv1alpha1.Subnet
+
+	if state.SubnetIDv6 == "" {
+		subnet2 := apiv1alpha1.Subnet{
+			Purpose: apiv1alpha1.PurposeNodes,
+			ID:      state.SubnetID,
+		}
+		subnet = append(subnet, subnet2)
+	}
+
 	return &apiv1alpha1.InfrastructureStatus{
 		TypeMeta: metav1.TypeMeta{
 			APIVersion: apiv1alpha1.SchemeGroupVersion.String(),
@@ -296,12 +306,7 @@ func StatusFromTerraformState(state *TerraformState) *apiv1alpha1.Infrastructure
 			Router: apiv1alpha1.RouterStatus{
 				ID: state.RouterID,
 			},
-			Subnets: []apiv1alpha1.Subnet{
-				{
-					Purpose: apiv1alpha1.PurposeNodes,
-					ID:      state.SubnetID,
-				},
-			},
+			Subnets: subnet,
 		},
 		SecurityGroups: []apiv1alpha1.SecurityGroup{
 			{
