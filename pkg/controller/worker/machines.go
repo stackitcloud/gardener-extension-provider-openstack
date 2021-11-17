@@ -169,7 +169,12 @@ func (w *workerDelegate) generateMachineConfig(ctx context.Context) error {
 			}
 
 			machineClassSpec["subnetID"] = subnet.ID
-			machineClassSpec["subnetIDs"] = subnets
+
+			var subnetIDs = make([]string, 0)
+			for _, subnet := range subnets {
+				subnetIDs = append(subnetIDs, subnet.ID)
+			}
+			machineClassSpec["subnetIDs"] = subnetIDs
 
 			if volumeSize > 0 {
 				machineClassSpec["rootDiskSize"] = volumeSize
