@@ -76,6 +76,11 @@ func (w *workerDelegate) GenerateMachineDeployments(ctx context.Context) (worker
 }
 
 func (w *workerDelegate) generateMachineConfig(ctx context.Context) error {
+
+	if w.worker != nil {
+		return fmt.Errorf("ICH WILL CRASHEN!!!")
+	}
+
 	logger := log.Log.WithName("generateMachineConfig:")
 	var (
 		machineDeployments = worker.MachineDeployments{}
