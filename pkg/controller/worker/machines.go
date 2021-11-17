@@ -20,9 +20,6 @@ import (
 	api "github.com/gardener/gardener-extension-provider-openstack/pkg/apis/openstack"
 	"github.com/gardener/gardener-extension-provider-openstack/pkg/apis/openstack/helper"
 	"github.com/gardener/gardener-extension-provider-openstack/pkg/openstack"
-	"path/filepath"
-	"sigs.k8s.io/controller-runtime/pkg/log"
-
 	extensionscontroller "github.com/gardener/gardener/extensions/pkg/controller"
 	"github.com/gardener/gardener/extensions/pkg/controller/worker"
 	genericworkeractuator "github.com/gardener/gardener/extensions/pkg/controller/worker/genericactuator"
@@ -30,6 +27,7 @@ import (
 	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
 	"github.com/gardener/gardener/pkg/client/kubernetes"
 	machinev1alpha1 "github.com/gardener/machine-controller-manager/pkg/apis/machine/v1alpha1"
+	"path/filepath"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -76,12 +74,6 @@ func (w *workerDelegate) GenerateMachineDeployments(ctx context.Context) (worker
 }
 
 func (w *workerDelegate) generateMachineConfig(ctx context.Context) error {
-
-	if w.worker != nil {
-		return fmt.Errorf("ICH WILL CRASHEN!!!")
-	}
-
-	logger := log.Log.WithName("generateMachineConfig:")
 	var (
 		machineDeployments = worker.MachineDeployments{}
 		machineClasses     []map[string]interface{}
@@ -105,8 +97,6 @@ func (w *workerDelegate) generateMachineConfig(ctx context.Context) error {
 		return err
 	}
 
-	logger.V(1).Info("generateMachineConfig()", "infrastructureStatus", infrastructureStatus)
-
 	// keep because of backward compatibility
 	subnet, err := helper.FindSubnetByPurpose(infrastructureStatus.Networks.Subnets, api.PurposeNodes)
 	if err != nil {
@@ -116,7 +106,6 @@ func (w *workerDelegate) generateMachineConfig(ctx context.Context) error {
 	if err != nil {
 		return err
 	}
-	logger.V(1).Info("generateMachineConfig()", "subnets", subnets)
 
 	for _, pool := range w.worker.Spec.Pools {
 		zoneLen := int32(len(pool.Zones))
