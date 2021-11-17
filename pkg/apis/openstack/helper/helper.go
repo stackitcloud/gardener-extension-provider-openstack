@@ -37,7 +37,7 @@ func FindSubnetByPurpose(subnets []api.Subnet, purpose api.Purpose) (*api.Subnet
 // whose purpose matches with the given purpose. If no such entry is found then an error will be
 // returned.
 func FindSubnetsByPurpose(subnets []api.Subnet, purpose api.Purpose) ([]api.Subnet, error) {
-	var subnetList []api.Subnet
+	var subnetList = make([]api.Subnet, 0)
 	for _, subnet := range subnets {
 		if subnet.Purpose == purpose {
 			subnets = append(subnets, subnet)
