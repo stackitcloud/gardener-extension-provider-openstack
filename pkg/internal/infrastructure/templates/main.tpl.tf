@@ -150,7 +150,7 @@ subnet_id = "${openstack_networking_subnet_v2.cluster-v6.id}"
 }
 {{- end }}
 
-resource "openstack_networking_router_interface_v2" "router_nodes" {
+resource "openstack_networking_router_interface_v2" "router_nodes_v4" {
   router_id = {{ .router.id }}
   subnet_id = openstack_networking_subnet_v2.cluster-v4.id
 }
