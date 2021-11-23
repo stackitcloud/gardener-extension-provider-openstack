@@ -19,12 +19,15 @@ spec:
   scope: Namespaced
   versions:
     - additionalPrinterColumns:
-        - jsonPath: .status.creationTimestamp
-          name: creationTimestamp
-          type: string
         - jsonPath: .status.conditions[?(@.type=="EnvoyUpToDate")].status
           name: EnvoyUpToDate
           type: string
+        - jsonPath: .status.creationTimestamp
+          name: creationTimestamp
+          type: string
+        - jsonPath: .metadata.creationTimestamp
+          name: AGE
+          type: date
       name: v1beta1
       schema:
         openAPIV3Schema:
@@ -131,15 +134,10 @@ spec:
                     - name
                     - namespace
                   type: object
-                portID:
-                  description: PortID defines the openstack ID from the Port. TODO deprecated
-                    -> remove this field in future versions
-                  type: string
               required:
                 - floatingID
                 - infrastructure
                 - loadBalancerRef
-                - portID
               type: object
             status:
               description: LoadBalancerMachineStatus defines the observed state of LoadBalancerMachine.
@@ -256,6 +254,9 @@ spec:
         - jsonPath: .status.readyReplicas
           name: READY
           type: string
+        - jsonPath: .metadata.creationTimestamp
+          name: AGE
+          type: date
       name: v1beta1
       schema:
         openAPIV3Schema:
@@ -429,15 +430,10 @@ spec:
                             - name
                             - namespace
                           type: object
-                        portID:
-                          description: PortID defines the openstack ID from the Port.
-                            TODO deprecated -> remove this field in future versions
-                          type: string
                       required:
                         - floatingID
                         - infrastructure
                         - loadBalancerRef
-                        - portID
                       type: object
                   required:
                     - labels
@@ -507,6 +503,9 @@ spec:
         - jsonPath: .status.externalIP
           name: externalIP
           type: string
+        - jsonPath: .metadata.creationTimestamp
+          name: AGE
+          type: date
       name: v1beta1
       schema:
         openAPIV3Schema:
@@ -630,13 +629,21 @@ spec:
                   default: false
                   description: InternalLB is a bool for internal LoadBalancer. If set
                     to false a FloatingIP will be assigned to the LB. Defaults to false.
+                    TODO move to LoadBalancerOptions
                   type: boolean
                 loadBalancerSourceRanges:
                   description: LoadBalancerSourceRanges restrict traffic to IP ranges
-                    for the LoadBalancer (copy from service)
+                    for the LoadBalancer (copy from service) TODO move to LoadBalancerOptions
                   items:
                     type: string
                   type: array
+                options:
+                  description: Options for additional LoadBalancer settings
+                  properties:
+                    tcpProxyProtocol:
+                      description: TCPProxyProtocol enable HAProxy TCP Proxy Protocol
+                      type: boolean
+                  type: object
                 ports:
                   description: Ports defines the Ports for the LoadBalancer (copy from
                     service)
