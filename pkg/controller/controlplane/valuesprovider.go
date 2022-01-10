@@ -866,7 +866,7 @@ func getYawolChartValues(
 	}
 
 	values := map[string]interface{}{
-		"enabled":            true,
+		"enabled":            false,
 		"replicas":           extensionscontroller.GetControlPlaneReplicas(cluster, scaledDown, 1),
 		"yawolNamespace":     cp.Namespace,
 		"yawolOSSecretName":  "cloud-provider-config",
