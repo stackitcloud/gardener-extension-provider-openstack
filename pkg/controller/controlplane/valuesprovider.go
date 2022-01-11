@@ -849,9 +849,10 @@ func getYawolChartValues(
 	scaledDown bool,
 ) (map[string]interface{}, error) {
 
-	// disable yawol service controller if yawol is disables or useOctavia is true
+	// disable yawol service controller if yawol is disabled or useOctavia is true or lb provider is not octavia
 	if (cloudprofileConfig.UseOctavia != nil && *cloudprofileConfig.UseOctavia) ||
-		cloudprofileConfig.UseYAWOL == nil || !*cloudprofileConfig.UseYAWOL {
+		cloudprofileConfig.UseYAWOL == nil || !*cloudprofileConfig.UseYAWOL ||
+		cpConfig.LoadBalancerProvider != "octavia" {
 		return map[string]interface{}{
 			"enabled": false,
 		}, nil
@@ -866,7 +867,7 @@ func getYawolChartValues(
 	}
 
 	values := map[string]interface{}{
-		"enabled":            false,
+		"enabled":            true,
 		"replicas":           extensionscontroller.GetControlPlaneReplicas(cluster, scaledDown, 1),
 		"yawolNamespace":     cp.Namespace,
 		"yawolOSSecretName":  "cloud-provider-config",
