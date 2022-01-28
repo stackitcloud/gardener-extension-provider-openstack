@@ -22,20 +22,6 @@ const (
 	// VPNTunnel dictates that VPN is used as a tunnel between seed and shoot networks.
 	VPNTunnel string = "vpn-shoot"
 
-	// BasicAuthSecretName is the name of the secret containing basic authentication credentials for the kube-apiserver.
-	BasicAuthSecretName = "kube-apiserver-basic-auth"
-
-	// EtcdEncryptionSecretName is the name of the shoot-specific secret which contains
-	// that shoot's EncryptionConfiguration. The EncryptionConfiguration contains a key
-	// which the shoot's apiserver uses for encrypting selected etcd content.
-	// Should match charts/seed-controlplane/charts/kube-apiserver/templates/deployment.yaml
-	EtcdEncryptionSecretName = "etcd-encryption-secret"
-
-	// EtcdEncryptionSecretFileName is the name of the file within the EncryptionConfiguration
-	// which is made available as volume mount to the shoot's apiserver.
-	// Should match charts/seed-controlplane/charts/kube-apiserver/templates/deployment.yaml
-	EtcdEncryptionSecretFileName = "encryption-configuration.yaml"
-
 	// EtcdEncryptionChecksumLabelName is the name of the label which is added to the shoot
 	// secrets after rewriting them to ensure that successfully rewritten secrets are not
 	// (unnecessarily) rewritten during each reconciliation.
@@ -87,9 +73,6 @@ const (
 	// KubeAPIServerHealthCheck is a key for the kube-apiserver-health-check user.
 	KubeAPIServerHealthCheck = "kube-apiserver-health-check"
 
-	// StaticTokenSecretName is the name of the secret containing static tokens for the kube-apiserver.
-	StaticTokenSecretName = "static-token"
-
 	// VPASecretName is the name of the secret used by VPA
 	VPASecretName = "vpa-tls-certs"
 
@@ -106,20 +89,8 @@ const (
 	// RegistrationSpecHash is a constant for a label on `ControllerInstallation`s (similar to `pod-template-hash` on `Pod`s).
 	RegistrationSpecHash = "registration-spec-hash"
 
-	// VpaAdmissionControllerName is the name of the vpa-admission-controller name.
-	VpaAdmissionControllerName = "gardener.cloud:vpa:admission-controller"
-	// VpaRecommenderName is the name of the vpa-recommender name.
-	VpaRecommenderName = "gardener.cloud:vpa:recommender"
-	// VpaUpdaterName is the name of the vpa-updater name.
-	VpaUpdaterName = "gardener.cloud:vpa:updater"
-	// VpaExporterName is the name of the vpa-exporter name.
-	VpaExporterName = "gardener.cloud:vpa:exporter"
-
 	// IstioNamespace is the istio-system namespace
 	IstioNamespace = "istio-system"
-
-	// ServiceAccountSigningKeySecretDataKey is the data key of a signing key Kubernetes secret.
-	ServiceAccountSigningKeySecretDataKey = "signing-key"
 
 	// AlertManagerTLS is the name of the secret resource which holds the TLS certificate for Alert Manager.
 	AlertManagerTLS = "alertmanager-tls"
@@ -132,6 +103,9 @@ const (
 
 	// EndUserCrtValidity is the time period a user facing certificate is valid.
 	EndUserCrtValidity = 730 * 24 * time.Hour // ~2 years, see https://support.apple.com/en-us/HT210176
+
+	// CrtRenewalWindow is the time window in which certificates are supposed to be replaced before they expire.
+	CrtRenewalWindow = 30 * 24 * time.Hour
 
 	// ShootDNSIngressName is a constant for the DNS resources used for the shoot ingress addon.
 	ShootDNSIngressName = "i"
@@ -149,3 +123,12 @@ const (
 	// NodeLocalIPVSAddress is the IPv4 address used by node local dns when IPVS is used.
 	NodeLocalIPVSAddress = "169.254.20.10"
 )
+
+// IngressTLSSecretNames are the secrets which contain operator or user facing x509 certificates.
+// These are usually exposed via an `Ingress` in the shoot control plane.
+var IngressTLSSecretNames = []string{
+	AlertManagerTLS,
+	GrafanaTLS,
+	PrometheusTLS,
+	LokiTLS,
+}

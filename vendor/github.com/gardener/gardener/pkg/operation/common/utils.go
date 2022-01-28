@@ -25,7 +25,7 @@ import (
 
 	v1beta1constants "github.com/gardener/gardener/pkg/apis/core/v1beta1/constants"
 	"github.com/gardener/gardener/pkg/client/kubernetes"
-	"github.com/gardener/gardener/pkg/operation/botanist/component/logging"
+	gutil "github.com/gardener/gardener/pkg/utils/gardener"
 	kutil "github.com/gardener/gardener/pkg/utils/kubernetes"
 
 	hvpav1alpha1 "github.com/gardener/hvpa-controller/api/v1alpha1"
@@ -166,11 +166,15 @@ func DeleteVpa(ctx context.Context, c client.Client, namespace string, isShoot b
 
 	if isShoot {
 		resources = append(resources,
+			gutil.NewShootAccessSecret(v1beta1constants.DeploymentNameVPAAdmissionController, namespace).Secret,
+			gutil.NewShootAccessSecret(v1beta1constants.DeploymentNameVPARecommender, namespace).Secret,
+			gutil.NewShootAccessSecret(v1beta1constants.DeploymentNameVPAUpdater, namespace).Secret,
+			&corev1.Secret{ObjectMeta: metav1.ObjectMeta{Name: VPASecretName, Namespace: namespace}},
+			&networkingv1.NetworkPolicy{ObjectMeta: metav1.ObjectMeta{Name: "allow-kube-apiserver-to-vpa-admission-controller", Namespace: namespace}},
+			// TODO(rfranzke): Remove in a future release.
 			&corev1.Secret{ObjectMeta: metav1.ObjectMeta{Name: "vpa-admission-controller", Namespace: namespace}},
 			&corev1.Secret{ObjectMeta: metav1.ObjectMeta{Name: "vpa-recommender", Namespace: namespace}},
-			&corev1.Secret{ObjectMeta: metav1.ObjectMeta{Name: VPASecretName, Namespace: namespace}},
 			&corev1.Secret{ObjectMeta: metav1.ObjectMeta{Name: "vpa-updater", Namespace: namespace}},
-			&networkingv1.NetworkPolicy{ObjectMeta: metav1.ObjectMeta{Name: "allow-kube-apiserver-to-vpa-admission-controller", Namespace: namespace}},
 		)
 	} else {
 		resources = append(resources,
@@ -201,15 +205,6 @@ func DeleteVpa(ctx context.Context, c client.Client, namespace string, isShoot b
 	return nil
 }
 
-// DeleteShootLoggingStack deletes all shoot resource of the logging stack in the given namespace.
-func DeleteShootLoggingStack(ctx context.Context, k8sClient client.Client, namespace string) error {
-	if err := DeleteLoki(ctx, k8sClient, namespace); err != nil {
-		return err
-	}
-
-	return DeleteShootNodeLoggingStack(ctx, k8sClient, namespace)
-}
-
 // DeleteLoki  deletes all resources of the Loki in a given namespace.
 func DeleteLoki(ctx context.Context, k8sClient client.Client, namespace string) error {
 	resources := []client.Object{
@@ -218,24 +213,10 @@ func DeleteLoki(ctx context.Context, k8sClient client.Client, namespace string) 
 		&hvpav1alpha1.Hvpa{ObjectMeta: metav1.ObjectMeta{Name: "loki", Namespace: namespace}},
 		&corev1.ConfigMap{ObjectMeta: metav1.ObjectMeta{Name: "loki-config", Namespace: namespace}},
 		&corev1.Service{ObjectMeta: metav1.ObjectMeta{Name: "loki", Namespace: namespace}},
-		&corev1.ServiceAccount{ObjectMeta: metav1.ObjectMeta{Name: "loki", Namespace: namespace}},
 		&appsv1.StatefulSet{ObjectMeta: metav1.ObjectMeta{Name: "loki", Namespace: namespace}},
 		&corev1.PersistentVolumeClaim{ObjectMeta: metav1.ObjectMeta{Name: "loki-loki-0", Namespace: namespace}},
 	}
 
-	return kutil.DeleteObjects(ctx, k8sClient, resources...)
-}
-
-// DeleteShootNodeLoggingStack deletes all shoot resource of the shoot-node logging stack in the given namespace.
-func DeleteShootNodeLoggingStack(ctx context.Context, k8sClient client.Client, namespace string) error {
-	resources := []client.Object{
-		&extensionsv1beta1.Ingress{ObjectMeta: metav1.ObjectMeta{Name: "loki", Namespace: namespace}},
-		&networkingv1.Ingress{ObjectMeta: metav1.ObjectMeta{Name: "loki", Namespace: namespace}},
-		&corev1.Secret{ObjectMeta: metav1.ObjectMeta{Name: logging.SecretNameLokiKubeRBACProxyKubeconfig, Namespace: namespace}},
-		&corev1.Secret{ObjectMeta: metav1.ObjectMeta{Name: LokiTLS, Namespace: namespace}},
-		&networkingv1.NetworkPolicy{ObjectMeta: metav1.ObjectMeta{Name: "allow-from-prometheus-to-loki-telegraf", Namespace: namespace}},
-		&corev1.ConfigMap{ObjectMeta: metav1.ObjectMeta{Name: "telegraf-config", Namespace: namespace}},
-	}
 	return kutil.DeleteObjects(ctx, k8sClient, resources...)
 }
 
@@ -388,33 +369,12 @@ func DeleteGrafanaByRole(ctx context.Context, k8sClient kubernetes.Interface, na
 	return nil
 }
 
-// ReadServiceAccountSigningKeySecret reads the signing key secret to extract the signing key.
-// It errors if there is no value at ServiceAccountSigningKeySecretDataKey.
-func ReadServiceAccountSigningKeySecret(secret *corev1.Secret) (string, error) {
-	data, ok := secret.Data[ServiceAccountSigningKeySecretDataKey]
-	if !ok {
-		return "", fmt.Errorf("no signing key secret in secret %s/%s at .Data.%s", secret.Namespace, secret.Name, ServiceAccountSigningKeySecretDataKey)
-	}
-
-	return string(data), nil
-}
-
-// GetServiceAccountSigningKeySecret gets the signing key from the secret with the given name and namespace.
-func GetServiceAccountSigningKeySecret(ctx context.Context, c client.Client, shootNamespace, secretName string) (string, error) {
-	secret := &corev1.Secret{}
-	if err := c.Get(ctx, kutil.Key(shootNamespace, secretName), secret); err != nil {
-		return "", err
-	}
-
-	return ReadServiceAccountSigningKeySecret(secret)
-}
-
-// DeleteDeploymentsHavingDeprecatedRoleLabelKey deletes the Deployments with the passed object keys if
-// the corresponding Deployment .spec.selector contains the deprecated "garden.sapcloud.io/role" label key.
-func DeleteDeploymentsHavingDeprecatedRoleLabelKey(ctx context.Context, c client.Client, keys []client.ObjectKey) error {
+// DeleteStatefulSetsHavingDeprecatedRoleLabelKey deletes the StatefulSets with the passed object keys if
+// the corresponding StatefulSet .spec.selector contains the deprecated "garden.sapcloud.io/role" label key.
+func DeleteStatefulSetsHavingDeprecatedRoleLabelKey(ctx context.Context, c client.Client, keys []client.ObjectKey) error {
 	for _, key := range keys {
-		deployment := &appsv1.Deployment{}
-		if err := c.Get(ctx, key, deployment); err != nil {
+		sts := &appsv1.StatefulSet{}
+		if err := c.Get(ctx, key, sts); err != nil {
 			if apierrors.IsNotFound(err) {
 				continue
 			}
@@ -422,12 +382,12 @@ func DeleteDeploymentsHavingDeprecatedRoleLabelKey(ctx context.Context, c client
 			return err
 		}
 
-		if _, ok := deployment.Spec.Selector.MatchLabels[v1beta1constants.DeprecatedGardenRole]; ok {
-			if err := c.Delete(ctx, deployment); client.IgnoreNotFound(err) != nil {
+		if _, ok := sts.Spec.Selector.MatchLabels[v1beta1constants.DeprecatedGardenRole]; ok {
+			if err := c.Delete(ctx, sts); client.IgnoreNotFound(err) != nil {
 				return err
 			}
 
-			if err := kutil.WaitUntilResourceDeleted(ctx, c, deployment, 2*time.Second); err != nil {
+			if err := kutil.WaitUntilResourceDeleted(ctx, c, sts, 2*time.Second); err != nil {
 				return err
 			}
 		}
