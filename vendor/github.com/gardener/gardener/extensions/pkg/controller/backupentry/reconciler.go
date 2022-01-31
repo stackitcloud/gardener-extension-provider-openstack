@@ -27,11 +27,13 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/runtime/inject"
 
 	extensionscontroller "github.com/gardener/gardener/extensions/pkg/controller"
+	"github.com/gardener/gardener/extensions/pkg/controller/common"
 	gardencorev1beta1 "github.com/gardener/gardener/pkg/apis/core/v1beta1"
 	v1beta1constants "github.com/gardener/gardener/pkg/apis/core/v1beta1/constants"
 	gardencorev1beta1helper "github.com/gardener/gardener/pkg/apis/core/v1beta1/helper"
 	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
 	"github.com/gardener/gardener/pkg/controllerutils"
+	reconcilerutils "github.com/gardener/gardener/pkg/controllerutils/reconciler"
 	kutil "github.com/gardener/gardener/pkg/utils/kubernetes"
 )
 
@@ -49,7 +51,7 @@ type reconciler struct {
 func NewReconciler(actuator Actuator) reconcile.Reconciler {
 	logger := log.Log.WithName(ControllerName)
 
-	return extensionscontroller.OperationAnnotationWrapper(
+	return reconcilerutils.OperationAnnotationWrapper(
 		func() client.Object { return &extensionsv1alpha1.BackupEntry{} },
 		&reconciler{
 			logger:        logger,
@@ -84,19 +86,34 @@ func (r *reconciler) Reconcile(ctx context.Context, request reconcile.Request) (
 	}
 
 	shootTechnicalID, _ := ExtractShootDetailsFromBackupEntryName(be.Name)
-	shoot, err := extensionscontroller.GetShoot(ctx, r.client, shootTechnicalID)
+	cluster, err := extensionscontroller.GetCluster(ctx, r.client, shootTechnicalID)
 	// As BackupEntry continues to exist post deletion of a Shoot,
 	// we do not want to block its deletion when the Cluster is not found.
 	if client.IgnoreNotFound(err) != nil {
 		return reconcile.Result{}, err
 	}
 
-	if extensionscontroller.IsShootFailed(shoot) {
-		r.logger.Info("Skipping the reconciliation of backupentry of failed shoot", "name", kutil.ObjectName(be))
+	logger := r.logger.WithValues("backupentry", be.Name)
+	if extensionscontroller.IsFailed(cluster) {
+		logger.Info("Skipping the reconciliation of backupentry of failed shoot")
 		return reconcile.Result{}, nil
 	}
 
 	operationType := gardencorev1beta1helper.ComputeOperationType(be.ObjectMeta, be.Status.LastOperation)
+
+	if cluster != nil && cluster.Shoot != nil && operationType != gardencorev1beta1.LastOperationTypeMigrate {
+		key := "backupentry:" + be.Name
+		ok, watchdogCtx, cleanup, err := common.GetOwnerCheckResultAndContext(ctx, r.client, shootTechnicalID, cluster.Shoot.Name, key)
+		if err != nil {
+			return reconcile.Result{}, err
+		} else if !ok {
+			return reconcile.Result{}, fmt.Errorf("this seed is not the owner of shoot %s", kutil.ObjectName(cluster.Shoot))
+		}
+		ctx = watchdogCtx
+		if cleanup != nil {
+			defer cleanup()
+		}
+	}
 
 	switch {
 	case extensionscontroller.ShouldSkipOperation(operationType, be):
@@ -131,8 +148,8 @@ func (r *reconciler) reconcile(ctx context.Context, be *extensionsv1alpha1.Backu
 
 	r.logger.Info("Starting the reconciliation of backupentry", "backupentry", kutil.ObjectName(be))
 	if err := r.actuator.Reconcile(ctx, be); err != nil {
-		_ = r.statusUpdater.Error(ctx, be, extensionscontroller.ReconcileErrCauseOrErr(err), operationType, "Error reconciling backupentry")
-		return extensionscontroller.ReconcileErr(err)
+		_ = r.statusUpdater.Error(ctx, be, reconcilerutils.ReconcileErrCauseOrErr(err), operationType, "Error reconciling backupentry")
+		return reconcilerutils.ReconcileErr(err)
 	}
 
 	if err := r.statusUpdater.Success(ctx, be, operationType, "Successfully reconciled backupentry"); err != nil {
@@ -161,8 +178,8 @@ func (r *reconciler) restore(ctx context.Context, be *extensionsv1alpha1.BackupE
 
 	r.logger.Info("Starting the restoration of backupentry", "backupentry", kutil.ObjectName(be))
 	if err := r.actuator.Restore(ctx, be); err != nil {
-		_ = r.statusUpdater.Error(ctx, be, extensionscontroller.ReconcileErrCauseOrErr(err), gardencorev1beta1.LastOperationTypeRestore, "Error restoring backupentry")
-		return extensionscontroller.ReconcileErr(err)
+		_ = r.statusUpdater.Error(ctx, be, reconcilerutils.ReconcileErrCauseOrErr(err), gardencorev1beta1.LastOperationTypeRestore, "Error restoring backupentry")
+		return reconcilerutils.ReconcileErr(err)
 	}
 
 	if err := r.statusUpdater.Success(ctx, be, gardencorev1beta1.LastOperationTypeRestore, "Successfully restored backupentry"); err != nil {
@@ -204,8 +221,8 @@ func (r *reconciler) delete(ctx context.Context, be *extensionsv1alpha1.BackupEn
 	}
 
 	if err := r.actuator.Delete(ctx, be); err != nil {
-		_ = r.statusUpdater.Error(ctx, be, extensionscontroller.ReconcileErrCauseOrErr(err), operationType, "Error deleting backupentry")
-		return extensionscontroller.ReconcileErr(err)
+		_ = r.statusUpdater.Error(ctx, be, reconcilerutils.ReconcileErrCauseOrErr(err), operationType, "Error deleting backupentry")
+		return reconcilerutils.ReconcileErr(err)
 	}
 
 	if err := r.statusUpdater.Success(ctx, be, operationType, "Successfully deleted backupentry"); err != nil {
@@ -231,8 +248,8 @@ func (r *reconciler) migrate(ctx context.Context, be *extensionsv1alpha1.BackupE
 
 	r.logger.Info("Starting the migration of backupentry", "backupentry", kutil.ObjectName(be))
 	if err := r.actuator.Migrate(ctx, be); err != nil {
-		_ = r.statusUpdater.Error(ctx, be, extensionscontroller.ReconcileErrCauseOrErr(err), gardencorev1beta1.LastOperationTypeMigrate, "Error migrating backupentry")
-		return extensionscontroller.ReconcileErr(err)
+		_ = r.statusUpdater.Error(ctx, be, reconcilerutils.ReconcileErrCauseOrErr(err), gardencorev1beta1.LastOperationTypeMigrate, "Error migrating backupentry")
+		return reconcilerutils.ReconcileErr(err)
 	}
 
 	if err := r.statusUpdater.Success(ctx, be, gardencorev1beta1.LastOperationTypeMigrate, "Successfully migrated backupentry"); err != nil {

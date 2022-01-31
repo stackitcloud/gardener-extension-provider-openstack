@@ -148,11 +148,6 @@ func ValidateShootObjectMetaUpdate(newMeta, oldMeta metav1.ObjectMeta, fldPath *
 
 // validateShootKubeconfigRotation validates that shoot in deletion cannot rotate its kubeconfig.
 func validateShootKubeconfigRotation(newMeta, oldMeta metav1.ObjectMeta, fldPath *field.Path) field.ErrorList {
-	// if the feature gate `DisallowKubeconfigRotationForShootInDeletion` is disabled, allow kubeconfig rotation
-	if !utilfeature.DefaultFeatureGate.Enabled(features.DisallowKubeconfigRotationForShootInDeletion) {
-		return field.ErrorList{}
-	}
-
 	if newMeta.DeletionTimestamp == nil {
 		return field.ErrorList{}
 	}
@@ -180,7 +175,7 @@ func ValidateShootSpec(meta metav1.ObjectMeta, spec *core.ShootSpec, fldPath *fi
 	allErrs = append(allErrs, validateDNS(spec.DNS, fldPath.Child("dns"))...)
 	allErrs = append(allErrs, validateExtensions(spec.Extensions, fldPath.Child("extensions"))...)
 	allErrs = append(allErrs, validateResources(spec.Resources, fldPath.Child("resources"))...)
-	allErrs = append(allErrs, validateKubernetes(spec.Kubernetes, fldPath.Child("kubernetes"))...)
+	allErrs = append(allErrs, validateKubernetes(spec.Kubernetes, isDockerConfigured(spec.Provider.Workers), fldPath.Child("kubernetes"))...)
 	allErrs = append(allErrs, validateNetworking(spec.Networking, fldPath.Child("networking"))...)
 	allErrs = append(allErrs, validateMaintenance(spec.Maintenance, fldPath.Child("maintenance"))...)
 	allErrs = append(allErrs, validateMonitoring(spec.Monitoring, fldPath.Child("monitoring"))...)
@@ -217,6 +212,15 @@ func ValidateShootSpec(meta metav1.ObjectMeta, spec *core.ShootSpec, fldPath *fi
 	return allErrs
 }
 
+func isDockerConfigured(workers []core.Worker) bool {
+	for _, worker := range workers {
+		if worker.CRI == nil || worker.CRI.Name == core.CRINameDocker {
+			return true
+		}
+	}
+	return false
+}
+
 // ValidateShootSpecUpdate validates the specification of a Shoot object.
 func ValidateShootSpecUpdate(newSpec, oldSpec *core.ShootSpec, newObjectMeta metav1.ObjectMeta, fldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
@@ -243,6 +247,29 @@ func ValidateShootSpecUpdate(newSpec, oldSpec *core.ShootSpec, newObjectMeta met
 	allErrs = append(allErrs, validateKubeProxyUpdate(newSpec.Kubernetes.KubeProxy, oldSpec.Kubernetes.KubeProxy, newSpec.Kubernetes.Version, fldPath.Child("kubernetes", "kubeProxy"))...)
 	allErrs = append(allErrs, validateKubeControllerManagerUpdate(newSpec.Kubernetes.KubeControllerManager, oldSpec.Kubernetes.KubeControllerManager, fldPath.Child("kubernetes", "kubeControllerManager"))...)
 	allErrs = append(allErrs, ValidateProviderUpdate(&newSpec.Provider, &oldSpec.Provider, fldPath.Child("provider"))...)
+
+	for i, newWorker := range newSpec.Provider.Workers {
+		oldWorker := newWorker
+		for _, ow := range oldSpec.Provider.Workers {
+			if ow.Name == newWorker.Name {
+				oldWorker = ow
+				break
+			}
+		}
+		idxPath := fldPath.Child("provider", "workers").Index(i)
+
+		oldKubernetesVersion := oldSpec.Kubernetes.Version
+		newKubernetesVersion := newSpec.Kubernetes.Version
+		if oldWorker.Kubernetes != nil && oldWorker.Kubernetes.Version != nil {
+			oldKubernetesVersion = *oldWorker.Kubernetes.Version
+		}
+		if newWorker.Kubernetes != nil && newWorker.Kubernetes.Version != nil {
+			newKubernetesVersion = *newWorker.Kubernetes.Version
+		}
+
+		// worker kubernetes versions must not be downgraded and must not skip a minor
+		allErrs = append(allErrs, validateKubernetesVersionUpdate(newKubernetesVersion, oldKubernetesVersion, idxPath.Child("kubernetes", "version"))...)
+	}
 
 	allErrs = append(allErrs, apivalidation.ValidateImmutableField(newSpec.Networking.Type, oldSpec.Networking.Type, fldPath.Child("networking", "type"))...)
 	if oldSpec.Networking.Pods != nil {
@@ -412,16 +439,6 @@ func validateKubeProxyUpdate(newConfig, oldConfig *core.KubeProxyConfig, version
 	if ok, _ := versionutils.CheckVersionMeetsConstraint(version, "< 1.16"); ok {
 		allErrs = append(allErrs, apivalidation.ValidateImmutableField(newMode, oldMode, fldPath.Child("mode"))...)
 	}
-	// The enabled flag is immutable for now to ensure that the networking extensions have time to adapt to it.
-	newEnabled := true
-	oldEnabled := true
-	if newConfig != nil && newConfig.Enabled != nil {
-		newEnabled = *newConfig.Enabled
-	}
-	if oldConfig != nil && oldConfig.Enabled != nil {
-		oldEnabled = *oldConfig.Enabled
-	}
-	allErrs = append(allErrs, apivalidation.ValidateImmutableField(newEnabled, oldEnabled, fldPath.Child("enabled"))...)
 	return allErrs
 }
 
@@ -477,6 +494,7 @@ func validateDNSUpdate(new, old *core.DNS, seedGotAssigned bool, fldPath *field.
 	return allErrs
 }
 
+// validateKubernetesVersionUpdate ensures that new version is newer than old version and does not skip one minor
 func validateKubernetesVersionUpdate(new, old string, fldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 
@@ -507,6 +525,37 @@ func validateKubernetesVersionUpdate(new, old string, fldPath *field.Path) field
 	}
 	if skippingMinorVersion {
 		allErrs = append(allErrs, field.Forbidden(fldPath, "kubernetes version upgrade cannot skip a minor version"))
+	}
+
+	return allErrs
+}
+
+// validateWorkerGroupAndControlPlaneKubernetesVersion ensures that new version is newer than old version and does not skip two minor
+func validateWorkerGroupAndControlPlaneKubernetesVersion(controlPlaneVersion, workerGroupVersion string, fldPath *field.Path) field.ErrorList {
+	allErrs := field.ErrorList{}
+
+	// worker group kubernetes version must not be higher than controlplane version
+	uplift, err := versionutils.CompareVersions(workerGroupVersion, ">", controlPlaneVersion)
+	if err != nil {
+		allErrs = append(allErrs, field.Invalid(fldPath, controlPlaneVersion, err.Error()))
+	}
+	if uplift {
+		allErrs = append(allErrs, field.Forbidden(fldPath, "worker group kubernetes version must not be higher than control plane version"))
+	}
+
+	// Forbid Kubernetes version upgrade which skips a minor version
+	workerVersion, err := semver.NewVersion(workerGroupVersion)
+	if err != nil {
+		allErrs = append(allErrs, field.Invalid(fldPath, workerGroupVersion, err.Error()))
+	}
+	threeMinorSkewVersion := workerVersion.IncMinor().IncMinor().IncMinor()
+
+	versionSkewViolation, err := versionutils.CompareVersions(controlPlaneVersion, ">=", threeMinorSkewVersion.String())
+	if err != nil {
+		allErrs = append(allErrs, field.Invalid(fldPath, controlPlaneVersion, err.Error()))
+	}
+	if versionSkewViolation {
+		allErrs = append(allErrs, field.Forbidden(fldPath, "worker group kubernetes version must be at most two minor versions behind control plane version"))
 	}
 
 	return allErrs
@@ -598,7 +647,7 @@ func validateResources(resources []core.NamedResourceReference, fldPath *field.P
 	return allErrs
 }
 
-func validateKubernetes(kubernetes core.Kubernetes, fldPath *field.Path) field.ErrorList {
+func validateKubernetes(kubernetes core.Kubernetes, dockerConfigured bool, fldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 
 	if len(kubernetes.Version) == 0 {
@@ -712,6 +761,25 @@ func validateKubernetes(kubernetes core.Kubernetes, fldPath *field.Path) field.E
 			}
 		}
 
+		if kubeAPIServer.ServiceAccountConfig != nil {
+			if kubeAPIServer.ServiceAccountConfig.ExtendTokenExpiration != nil && !geqKubernetes119 {
+				allErrs = append(allErrs, field.Forbidden(fldPath.Child("kubeAPIServer", "serviceAccountConfig", "extendTokenExpiration"), "this field is only available in Kubernetes v1.19+"))
+			}
+
+			if kubeAPIServer.ServiceAccountConfig.MaxTokenExpiration != nil && kubeAPIServer.ServiceAccountConfig.MaxTokenExpiration.Duration < 0 {
+				allErrs = append(allErrs, field.Invalid(fldPath.Child("kubeAPIServer", "serviceAccountConfig", "maxTokenExpiration"), *kubeAPIServer.ServiceAccountConfig.MaxTokenExpiration, "can not be negative"))
+			}
+		}
+
+		if kubeAPIServer.EventTTL != nil {
+			if kubeAPIServer.EventTTL.Duration < 0 {
+				allErrs = append(allErrs, field.Invalid(fldPath.Child("kubeAPIServer", "eventTTL"), *kubeAPIServer.EventTTL, "can not be negative"))
+			}
+			if kubeAPIServer.EventTTL.Duration > time.Hour*24*7 {
+				allErrs = append(allErrs, field.Invalid(fldPath.Child("kubeAPIServer", "eventTTL"), *kubeAPIServer.EventTTL, "can not be longer than 7d"))
+			}
+		}
+
 		allErrs = append(allErrs, ValidateFeatureGates(kubeAPIServer.FeatureGates, kubernetes.Version, fldPath.Child("kubeAPIServer", "featureGates"))...)
 	}
 
@@ -719,7 +787,7 @@ func validateKubernetes(kubernetes core.Kubernetes, fldPath *field.Path) field.E
 	allErrs = append(allErrs, validateKubeScheduler(kubernetes.KubeScheduler, kubernetes.Version, fldPath.Child("kubeScheduler"))...)
 	allErrs = append(allErrs, validateKubeProxy(kubernetes.KubeProxy, kubernetes.Version, fldPath.Child("kubeProxy"))...)
 	if kubernetes.Kubelet != nil {
-		allErrs = append(allErrs, ValidateKubeletConfig(*kubernetes.Kubelet, kubernetes.Version, fldPath.Child("kubelet"))...)
+		allErrs = append(allErrs, ValidateKubeletConfig(*kubernetes.Kubelet, kubernetes.Version, dockerConfigured, fldPath.Child("kubelet"))...)
 	}
 
 	if clusterAutoscaler := kubernetes.ClusterAutoscaler; clusterAutoscaler != nil {
@@ -836,6 +904,9 @@ func ValidateClusterAutoscaler(autoScaler core.ClusterAutoscaler, fldPath *field
 	}
 	if maxNodeProvisionTime := autoScaler.MaxNodeProvisionTime; maxNodeProvisionTime != nil && maxNodeProvisionTime.Duration < 0 {
 		allErrs = append(allErrs, field.Invalid(fldPath.Child("maxNodeProvisionTime"), *maxNodeProvisionTime, "can not be negative"))
+	}
+	if maxGracefulTerminationSeconds := autoScaler.MaxGracefulTerminationSeconds; maxGracefulTerminationSeconds != nil && *maxGracefulTerminationSeconds < 0 {
+		allErrs = append(allErrs, field.Invalid(fldPath.Child("maxGracefulTerminationSeconds"), *maxGracefulTerminationSeconds, "can not be negative"))
 	}
 
 	if expander := autoScaler.Expander; expander != nil && !availableClusterAutoscalerExpanderModes.Has(string(*expander)) {
@@ -1063,8 +1134,20 @@ func ValidateWorker(worker core.Worker, kubernetesVersion string, fldPath *field
 	if len(worker.Taints) > 0 {
 		allErrs = append(allErrs, validateTaints(worker.Taints, fldPath.Child("taints"))...)
 	}
-	if worker.Kubernetes != nil && worker.Kubernetes.Kubelet != nil {
-		allErrs = append(allErrs, ValidateKubeletConfig(*worker.Kubernetes.Kubelet, kubernetesVersion, fldPath.Child("kubernetes", "kubelet"))...)
+	if worker.Kubernetes != nil {
+		if worker.Kubernetes.Version != nil {
+			if !utilfeature.DefaultFeatureGate.Enabled(features.WorkerPoolKubernetesVersion) {
+				allErrs = append(allErrs, field.Forbidden(fldPath.Child("kubernetes", "version"), "worker pool kubernetes version may only be set if WorkerPoolKubernetesVersion feature gate is enabled"))
+			} else {
+				workerGroupKubernetesVersion := *worker.Kubernetes.Version
+				allErrs = append(allErrs, validateWorkerGroupAndControlPlaneKubernetesVersion(kubernetesVersion, workerGroupKubernetesVersion, fldPath.Child("kubernetes", "version"))...)
+				kubernetesVersion = workerGroupKubernetesVersion
+			}
+		}
+
+		if worker.Kubernetes.Kubelet != nil {
+			allErrs = append(allErrs, ValidateKubeletConfig(*worker.Kubernetes.Kubelet, kubernetesVersion, isDockerConfigured([]core.Worker{worker}), fldPath.Child("kubernetes", "kubelet"))...)
+		}
 	}
 
 	if worker.CABundle != nil {
@@ -1131,7 +1214,7 @@ func ValidateWorker(worker core.Worker, kubernetesVersion string, fldPath *field
 const PodPIDsLimitMinimum int64 = 100
 
 // ValidateKubeletConfig validates the KubeletConfig object.
-func ValidateKubeletConfig(kubeletConfig core.KubeletConfig, version string, fldPath *field.Path) field.ErrorList {
+func ValidateKubeletConfig(kubeletConfig core.KubeletConfig, version string, dockerConfigured bool, fldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 
 	if kubeletConfig.MaxPods != nil {
@@ -1143,6 +1226,9 @@ func ValidateKubeletConfig(kubeletConfig core.KubeletConfig, version string, fld
 		}
 	}
 	if kubeletConfig.ImagePullProgressDeadline != nil {
+		if !dockerConfigured {
+			allErrs = append(allErrs, field.Forbidden(fldPath.Child("imagePullProgressDeadline"), "can only be configured when a worker pool is configured with 'docker'. This setting has no effect for other container runtimes."))
+		}
 		allErrs = append(allErrs, ValidatePositiveDuration(kubeletConfig.ImagePullProgressDeadline, fldPath.Child("imagePullProgressDeadline"))...)
 	}
 	if kubeletConfig.EvictionPressureTransitionPeriod != nil {
