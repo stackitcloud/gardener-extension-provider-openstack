@@ -222,10 +222,13 @@ type StorageClassDefinition struct {
 	// Annotations sets annotations for the storageclass
 	// +optional
 	Annotations *map[string]string
-	// Labels sets annotations for the storageclass
+	// Labels sets labels for the storageclass
 	// +optional
 	Labels *map[string]string
 	// ReclaimPolicy sets reclaimPolicy for the storageclass
 	// +optional
 	ReclaimPolicy *string
+	// VolumeBindingMode sets bindingMode for the storageclass
+	// +optional
+	VolumeBindingMode *string
 }
