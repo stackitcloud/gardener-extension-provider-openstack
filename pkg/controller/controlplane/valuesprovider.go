@@ -501,6 +501,9 @@ func (vp *valuesProvider) GetStorageClassesChartValues(
 			if sc.ReclaimPolicy != nil && *sc.ReclaimPolicy != "" {
 				allSc[i]["reclaimPolicy"] = sc.ReclaimPolicy
 			}
+			if sc.VolumeBindingMode != nil && *sc.VolumeBindingMode != "" {
+				allSc[i]["volumeBindingMode"] = sc.VolumeBindingMode
+			}
 		}
 		values["storageclasses"] = allSc
 	} else {
