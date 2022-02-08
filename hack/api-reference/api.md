@@ -1716,6 +1716,18 @@ string
 <p>ReclaimPolicy sets reclaimPolicy for the storageclass</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>VolumeBindingMode</code></br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>VolumeBindingMode sets bindingMode for the storageclass</p>
+</td>
+</tr>
 </tbody>
 </table>
 <h3 id="openstack.provider.extensions.gardener.cloud/v1alpha1.Subnet">Subnet

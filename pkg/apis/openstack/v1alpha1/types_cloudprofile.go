@@ -212,4 +212,7 @@ type StorageClassDefinition struct {
 	// ReclaimPolicy sets reclaimPolicy for the storageclass
 	// +optional
 	ReclaimPolicy *string `json:"reclaimPolicy,omitempty"`
+	// VolumeBindingMode sets bindingMode for the storageclass
+	// +optional
+	VolumeBindingMode *string
 }
