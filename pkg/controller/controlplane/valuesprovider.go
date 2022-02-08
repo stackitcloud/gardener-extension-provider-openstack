@@ -503,6 +503,7 @@ func (vp *valuesProvider) GetStorageClassesChartValues(
 			}
 			if sc.VolumeBindingMode != nil && *sc.VolumeBindingMode != "" {
 				allSc[i]["volumeBindingMode"] = *sc.VolumeBindingMode
+				vp.logger.Info("Setting values provider", "VolumeBindingMode", *sc.VolumeBindingMode)
 			}
 		}
 		values["storageclasses"] = allSc
