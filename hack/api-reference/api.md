@@ -1718,7 +1718,7 @@ string
 </tr>
 <tr>
 <td>
-<code>VolumeBindingMode</code></br>
+<code>volumeBindingMode</code></br>
 <em>
 string
 </em>
