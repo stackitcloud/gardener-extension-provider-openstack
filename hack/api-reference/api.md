@@ -1428,6 +1428,16 @@ string
 <p>ID is the Router id.</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>idv6</code></br>
+<em>
+string
+</em>
+</td>
+<td>
+</td>
+</tr>
 </tbody>
 </table>
 <h3 id="openstack.provider.extensions.gardener.cloud/v1alpha1.SecurityGroup">SecurityGroup
