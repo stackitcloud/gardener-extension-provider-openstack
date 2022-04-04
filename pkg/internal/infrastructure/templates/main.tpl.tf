@@ -47,6 +47,7 @@ resource "openstack_networking_router_v2" "router" {
   external_subnet_ids = data.openstack_networking_subnet_ids_v2.fip_subnets.ids
   {{- end }}
 }
+
 {{ if .networks.externalNetworkID }}
 resource "openstack_networking_router_v2" "router-v6" {
   name                = "{{ .clusterName }}-v6"
@@ -88,10 +89,10 @@ resource "openstack_networking_subnet_v2" "cluster-v4" {
 
 }
 
-{{ if .networks.nodeIPv6 }}
+{{ if .networks.workersIPv6 }}
 resource "openstack_networking_subnet_v2" "cluster-v6" {
   name            = "{{ .clusterName }}-v6"
-  cidr            = "{{ .networks.nodeIPv6 }}"
+  cidr            = "{{ .networks.workersIPv6 }}"
   network_id      = {{ template "network-id" $ }}
 
   ip_version      = 6
@@ -103,55 +104,17 @@ resource "openstack_networking_subnet_v2" "cluster-v6" {
   {{ if .networks.subnetPoolID }}
   subnetpool_id = {{ .networks.subnetPoolID | quote }}
   {{- end}}
-}
-{{- end}}
 
-{{ if or .networks.serviceV6CIDR .networks.podV6CIDR }}
-resource "openstack_networking_network_v2" "pod-service-net" {
-  name           = "{{ .clusterName }}-service-pod"
-  admin_state_up = "true"
-}
-{{- end }}
-
-{{ if or .networks.serviceV6CIDR }}
-## For reservation in subnet pool
-resource "openstack_networking_subnet_v2" "services-v6" {
-  name            = "{{ .clusterName }}-service-v6"
-  cidr            = "{{ .networks.serviceV6CIDR }}"
-  network_id      = "${openstack_networking_network_v2.pod-service-net.id}"
-  ip_version      = 6
-  ipv6_ra_mode      = "dhcpv6-stateful"
-  ipv6_address_mode = "dhcpv6-stateful"
-
-  dns_nameservers = []
-
-  {{ if .networks.subnetPoolID }}
-  subnetpool_id = {{ .networks.subnetPoolID | quote }}
+  {{ if and .networks.allocationPool.start .networks.allocationPool.end }}
+  allocation_pool {
+    start = {{ .networks.allocationPool.start | quote  }}
+    end = {{ .networks.allocationPool.end | quote  }}
+  }
   {{- end}}
 }
 {{- end}}
 
-{{ if or .networks.podV6CIDR }}
-## For reservation in subnet pool
-resource "openstack_networking_subnet_v2" "pods-v6" {
-name            = "{{ .clusterName }}-pod-v6"
-cidr            = "{{ .networks.podV6CIDR }}"
-network_id      = "${openstack_networking_network_v2.pod-service-net.id}"
-
-ip_version      = 6
-ipv6_ra_mode      = "dhcpv6-stateful"
-ipv6_address_mode = "dhcpv6-stateful"
-
-dns_nameservers = []
-
-{{ if .networks.subnetPoolID }}
-subnetpool_id = {{ .networks.subnetPoolID | quote }}
-{{- end}}
-}
-{{- end}}
-
-
-{{- if .networks.nodeIPv6 }}
+{{- if .networks.workersIPv6 }}
 resource "openstack_networking_router_interface_v2" "router_nodes_v6" {
 router_id = "${openstack_networking_router_v2.router-v6.id}"
 subnet_id = "${openstack_networking_subnet_v2.cluster-v6.id}"

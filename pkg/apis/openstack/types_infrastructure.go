@@ -41,6 +41,8 @@ type Networks struct {
 	Worker string
 	// Workers is a CIDRs of a worker subnet (private) to create (used for the VMs).
 	Workers string
+	// AllocationPool defines the IPs that are assigned to VMs in the network
+	AllocationPool string
 	// Decides if the nodes should have two interfaces
 	DualHomed bool
 	// SubnetPoolID

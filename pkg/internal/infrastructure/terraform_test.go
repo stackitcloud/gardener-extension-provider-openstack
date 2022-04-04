@@ -115,15 +115,6 @@ var _ = Describe("Terraform", func() {
 		)
 
 		BeforeEach(func() {
-			/*
-
-			   "externalNetworkID": <string>"",
-			   "workers": <string>"10.1.0.0/16",
-			   "workersIPv6": <string>"",
-			   "dualHomed": <bool>false,
-			   "subnetPoolID": <string>"",
-			*/
-
 			expectedOpenStackValues = map[string]interface{}{
 				"authURL":           keystoneURL,
 				"region":            infra.Spec.Region,
@@ -143,6 +134,7 @@ var _ = Describe("Terraform", func() {
 				"dualHomed":         false,
 				"subnetPoolID":      "",
 				"externalNetworkID": "",
+				"allocationPool":    map[string]interface{}{},
 			}
 			expectedOutputKeysValues = map[string]interface{}{
 				"routerID":          TerraformOutputKeyRouterID,

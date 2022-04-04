@@ -119,8 +119,6 @@ func ComputeTerraformerTemplateValues(
 		routerConfig["enableSNAT"] = *cloudProfileConfig.UseSNAT
 	}
 
-	//workersCIDR := config.Networks.Workers
-	//workersCIDRv6 := config.Networks.Workers
 	var workersCIDR string
 	var workersCIDRv6 string
 	// Backwards compatibility - remove this code in a future version.
@@ -128,7 +126,7 @@ func ComputeTerraformerTemplateValues(
 	if workerCompat == "" {
 		workerCompat = config.Networks.Worker
 	}
-	for _, val := range strings.Split(config.Networks.Workers, ",") {
+	for _, val := range strings.Split(workerCompat, ",") {
 		if net.IsIPv6CIDRString(val) {
 			workersCIDRv6 = val
 		} else {
@@ -146,12 +144,20 @@ func ComputeTerraformerTemplateValues(
 		subnetPoolID = *config.Networks.SubnetPoolID
 	}
 
+	allocationPool := map[string]interface{}{}
+	if config.Networks.AllocationPool != "" {
+		split := strings.Split(config.Networks.AllocationPool, "-")
+		allocationPool["start"] = split[0]
+		allocationPool["end"] = split[1]
+	}
+
 	networksConfig := map[string]interface{}{
 		"workers":           workersCIDR,
 		"workersIPv6":       workersCIDRv6,
 		"dualHomed":         config.Networks.DualHomed,
 		"subnetPoolID":      subnetPoolID,
 		"externalNetworkID": externalNetworkID,
+		"allocationPool":    allocationPool,
 	}
 	if config.Networks.ID != nil {
 		createNetwork = false
