@@ -213,7 +213,11 @@ output "{{ .outputKeys.routerID }}" {
 }
 
 output "{{ .outputKeys.routerIDv6 }}" {
+{{ if .networks.externalNetworkID }}
   value = openstack_networking_router_v2.router-v6.id
+{{ else }}
+  value = {{ .router.id }}
+{{ end }}
 }
 
 output "{{ .outputKeys.networkID }}" {
