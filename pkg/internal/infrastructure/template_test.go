@@ -152,7 +152,8 @@ var _ = Describe("Template", func() {
 			// Subnet Pool
 			Expect(terraformString).To(ContainSubstring("subnetpool_id = \"subnetpoolforv6\""))
 
-			// Name consistency check. !! IF THIS FAILS TERRAFORM WILL DO UNWANTED THINGS !!
+			// Name consistency check.
+			// !! IF THIS FAILS TERRAFORM WILL DO UNWANTED THINGS !!
 			Expect(terraformString).To(ContainSubstring("resource \"openstack_networking_network_v2\" \"cluster\" {\n  name           = \"mycoolcluster\""))
 			// v6
 			Expect(terraformString).To(ContainSubstring("resource \"openstack_networking_subnet_v2\" \"cluster-v6\" {\n  name            = \"mycoolcluster-v6\"\n  cidr            = \"cafe::/64\""))
