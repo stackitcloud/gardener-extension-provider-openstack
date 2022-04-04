@@ -119,33 +119,20 @@ func ComputeTerraformerTemplateValues(
 		routerConfig["enableSNAT"] = *cloudProfileConfig.UseSNAT
 	}
 
-	workersCIDR := config.Networks.Workers
+	//workersCIDR := config.Networks.Workers
+	//workersCIDRv6 := config.Networks.Workers
+	var workersCIDR string
+	var workersCIDRv6 string
 	// Backwards compatibility - remove this code in a future version.
-	if workersCIDR == "" {
-		workersCIDR = config.Networks.Worker
+	var workerCompat = config.Networks.Workers
+	if workerCompat == "" {
+		workerCompat = config.Networks.Worker
 	}
-
-	var nodesIPv6 string
-	var nodesIPv4 string
 	for _, val := range strings.Split(config.Networks.Workers, ",") {
 		if net.IsIPv6CIDRString(val) {
-			nodesIPv6 = val
+			workersCIDRv6 = val
 		} else {
-			nodesIPv4 = val
-		}
-	}
-
-	serviceCidr := ""
-	for _, val := range strings.Split(*cluster.Shoot.Spec.Networking.Services, ",") {
-		if net.IsIPv6CIDRString(val) {
-			serviceCidr = val
-		}
-	}
-
-	podCidr := ""
-	for _, val := range strings.Split(*cluster.Shoot.Spec.Networking.Pods, ",") {
-		if net.IsIPv6CIDRString(val) {
-			podCidr = val
+			workersCIDR = val
 		}
 	}
 
@@ -160,13 +147,10 @@ func ComputeTerraformerTemplateValues(
 	}
 
 	networksConfig := map[string]interface{}{
-		"workers":           nodesIPv4,
-		"nodeIPv4":          nodesIPv4,
-		"nodeIPv6":          nodesIPv6,
+		"workers":           workersCIDR,
+		"workersIPv6":       workersCIDRv6,
 		"dualHomed":         config.Networks.DualHomed,
 		"subnetPoolID":      subnetPoolID,
-		"serviceV6CIDR":     serviceCidr,
-		"podV6CIDR":         podCidr,
 		"externalNetworkID": externalNetworkID,
 	}
 	if config.Networks.ID != nil {
@@ -322,8 +306,8 @@ func StatusFromTerraformState(state *TerraformState) *apiv1alpha1.Infrastructure
 			Kind:       "InfrastructureStatus",
 		},
 		Networks: apiv1alpha1.NetworkStatus{
-			ID: state.NetworkID,
-			IDv6:         state.NetworkIDv6,
+			ID:   state.NetworkID,
+			IDv6: state.NetworkIDv6,
 			Name: state.NetworkName,
 			FloatingPool: apiv1alpha1.FloatingPoolStatus{
 				ID: state.FloatingNetworkID,
