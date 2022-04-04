@@ -212,6 +212,10 @@ output "{{ .outputKeys.routerID }}" {
   value = {{ .router.id }}
 }
 
+output "{{ .outputKeys.routerIDv6 }}" {
+  value = openstack_networking_router_v2.router-v6.id
+}
+
 output "{{ .outputKeys.networkID }}" {
   value = {{ template "network-id" $ }}
 }

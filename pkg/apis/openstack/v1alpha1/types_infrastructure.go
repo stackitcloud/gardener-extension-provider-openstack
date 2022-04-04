@@ -108,6 +108,7 @@ type NetworkStatus struct {
 type RouterStatus struct {
 	// ID is the Router id.
 	ID string `json:"id"`
+	IDv6 string `json:"idv6"`
 }
 
 // FloatingPoolStatus contains information about the floating pool.
