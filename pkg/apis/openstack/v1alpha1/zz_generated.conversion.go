@@ -732,6 +732,9 @@ func autoConvert_v1alpha1_Networks_To_openstack_Networks(in *Networks, out *open
 	out.Router = (*openstack.Router)(unsafe.Pointer(in.Router))
 	out.Worker = in.Worker
 	out.Workers = in.Workers
+	if err := v1.Convert_Pointer_string_To_string(&in.AllocationPool, &out.AllocationPool, s); err != nil {
+		return err
+	}
 	out.ID = (*string)(unsafe.Pointer(in.ID))
 	if err := v1.Convert_Pointer_bool_To_bool(&in.DualHomed, &out.DualHomed, s); err != nil {
 		return err
@@ -751,6 +754,9 @@ func autoConvert_openstack_Networks_To_v1alpha1_Networks(in *openstack.Networks,
 	out.Router = (*Router)(unsafe.Pointer(in.Router))
 	out.Worker = in.Worker
 	out.Workers = in.Workers
+	if err := v1.Convert_string_To_Pointer_string(&in.AllocationPool, &out.AllocationPool, s); err != nil {
+		return err
+	}
 	if err := v1.Convert_bool_To_Pointer_bool(&in.DualHomed, &out.DualHomed, s); err != nil {
 		return err
 	}
