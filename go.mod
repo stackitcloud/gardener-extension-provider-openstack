@@ -39,7 +39,7 @@ require (
 replace (
 	github.com/gardener/gardener => github.com/stackitcloud/gardener v1.43.2-ske-2
 	//github.com/gardener/gardener-resource-manager/api => github.com/gardener/gardener-resource-manager/api v0.25.0
-	github.com/gardener/machine-controller-manager => github.com/stackitcloud/machine-controller-manager v0.39.1-0.20220331135828-828aaf110054
+	github.com/gardener/machine-controller-manager => github.com/stackitcloud/machine-controller-manager v0.41.0-ske-1
 	github.com/prometheus/client_golang => github.com/prometheus/client_golang v1.11.0 // keep this value in sync with sigs.k8s.io/controller-runtime
 	k8s.io/api => k8s.io/api v0.23.3
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.23.3
