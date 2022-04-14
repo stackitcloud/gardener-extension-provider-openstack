@@ -59,7 +59,7 @@ providerSpec:
     rootDiskType: {{ $machineClass.rootDiskType }}
 {{- end }}
 {{- if $machineClass.volumeType }}
-  volumeType: {{ $machineClass.volumeType }}
+    volumeType: {{ $machineClass.volumeType }}
 {{- end }}
 {{- if $machineClass.serverGroupID }}
     serverGroupID: {{ $machineClass.serverGroupID }}
