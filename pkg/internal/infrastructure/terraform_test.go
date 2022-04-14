@@ -129,7 +129,12 @@ var _ = Describe("Terraform", func() {
 				"id": strconv.Quote("1"),
 			}
 			expectedNetworkValues = map[string]interface{}{
-				"workers": config.Networks.Workers,
+				"workers":           config.Networks.Workers,
+				"workersIPv6":       "",
+				"dualHomed":         false,
+				"subnetPoolID":      "",
+				"externalNetworkID": "",
+				"allocationPool":    map[string]interface{}{},
 			}
 			expectedOutputKeysValues = map[string]interface{}{
 				"routerID":          TerraformOutputKeyRouterID,
@@ -140,15 +145,16 @@ var _ = Describe("Terraform", func() {
 				"securityGroupName": TerraformOutputKeySecurityGroupName,
 				"floatingNetworkID": TerraformOutputKeyFloatingNetworkID,
 				"subnetID":          TerraformOutputKeySubnetID,
+				"subnetIDv6":        TerraformOutputKeySubnetIDv6,
 			}
 		})
 
 		It("Should split DualStack Cidr correctly", func() {
 			config.Networks.Workers = "100.250.0.0/16,2a05:b540:caf9::38:0/112"
-			values, _ := ComputeTerraformerChartValues(infra, credentials, config, cluster)
+			values, _ := ComputeTerraformerTemplateValues(infra, config, cluster)
 
-			Expect(values["networks"].(map[string]interface{})["nodeIPv4"]).To(Equal("100.250.0.0/16"))
-			Expect(values["networks"].(map[string]interface{})["nodeIPv6"]).To(Equal("2a05:b540:caf9::38:0/112"))
+			Expect(values["networks"].(map[string]interface{})["workers"]).To(Equal("100.250.0.0/16"))
+			Expect(values["networks"].(map[string]interface{})["workersIPv6"]).To(Equal("2a05:b540:caf9::38:0/112"))
 		})
 
 		It("should correctly compute the terraformer chart values", func() {

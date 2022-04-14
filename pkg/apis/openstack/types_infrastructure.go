@@ -41,6 +41,8 @@ type Networks struct {
 	Worker string
 	// Workers is a CIDRs of a worker subnet (private) to create (used for the VMs).
 	Workers string
+	// AllocationPool defines the IPs that are assigned to VMs in the network
+	AllocationPool string
 	// Decides if the nodes should have two interfaces
 	DualHomed bool
 	// SubnetPoolID
@@ -96,7 +98,8 @@ type NetworkStatus struct {
 // RouterStatus contains information about a generated Router or resources attached to an existing Router.
 type RouterStatus struct {
 	// ID is the Router id.
-	ID string
+	ID   string
+	IDv6 string
 }
 
 // FloatingPoolStatus contains information about the floating pool.

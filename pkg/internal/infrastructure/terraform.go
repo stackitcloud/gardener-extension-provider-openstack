@@ -38,7 +38,8 @@ const (
 	// TerraformOutputKeySSHKeyName key for accessing SSH key name from outputs in terraform
 	TerraformOutputKeySSHKeyName = "key_name"
 	// TerraformOutputKeyRouterID is the id the router between provider network and the worker subnet.
-	TerraformOutputKeyRouterID = "router_id"
+	TerraformOutputKeyRouterID   = "router_id"
+	TerraformOutputKeyRouterIDv6 = "router_id_v6"
 	// TerraformOutputKeyNetworkID is the private worker network.
 	TerraformOutputKeyNetworkID = "network_id"
 	// TerraformOutputKeyNetworkName is the private worker network name.
@@ -78,6 +79,7 @@ func ComputeTerraformerTemplateValues(
 		}
 		outputKeysConfig = map[string]interface{}{
 			"routerID":          TerraformOutputKeyRouterID,
+			"routerIDv6":        TerraformOutputKeyRouterIDv6,
 			"networkID":         TerraformOutputKeyNetworkID,
 			"networkName":       TerraformOutputKeyNetworkName,
 			"keyName":           TerraformOutputKeySSHKeyName,
@@ -119,33 +121,18 @@ func ComputeTerraformerTemplateValues(
 		routerConfig["enableSNAT"] = *cloudProfileConfig.UseSNAT
 	}
 
-	workersCIDR := config.Networks.Workers
+	var workersCIDR string
+	var workersCIDRv6 string
 	// Backwards compatibility - remove this code in a future version.
-	if workersCIDR == "" {
-		workersCIDR = config.Networks.Worker
+	var workerCompat = config.Networks.Workers
+	if workerCompat == "" {
+		workerCompat = config.Networks.Worker
 	}
-
-	var nodesIPv6 string
-	var nodesIPv4 string
-	for _, val := range strings.Split(config.Networks.Workers, ",") {
+	for _, val := range strings.Split(workerCompat, ",") {
 		if net.IsIPv6CIDRString(val) {
-			nodesIPv6 = val
+			workersCIDRv6 = val
 		} else {
-			nodesIPv4 = val
-		}
-	}
-
-	serviceCidr := ""
-	for _, val := range strings.Split(*cluster.Shoot.Spec.Networking.Services, ",") {
-		if net.IsIPv6CIDRString(val) {
-			serviceCidr = val
-		}
-	}
-
-	podCidr := ""
-	for _, val := range strings.Split(*cluster.Shoot.Spec.Networking.Pods, ",") {
-		if net.IsIPv6CIDRString(val) {
-			podCidr = val
+			workersCIDR = val
 		}
 	}
 
@@ -159,15 +146,20 @@ func ComputeTerraformerTemplateValues(
 		subnetPoolID = *config.Networks.SubnetPoolID
 	}
 
+	allocationPool := map[string]interface{}{}
+	if config.Networks.AllocationPool != "" {
+		split := strings.Split(config.Networks.AllocationPool, "-")
+		allocationPool["start"] = split[0]
+		allocationPool["end"] = split[1]
+	}
+
 	networksConfig := map[string]interface{}{
-		"workers":           nodesIPv4,
-		"nodeIPv4":          nodesIPv4,
-		"nodeIPv6":          nodesIPv6,
+		"workers":           workersCIDR,
+		"workersIPv6":       workersCIDRv6,
 		"dualHomed":         config.Networks.DualHomed,
 		"subnetPoolID":      subnetPoolID,
-		"serviceV6CIDR":     serviceCidr,
-		"podV6CIDR":         podCidr,
 		"externalNetworkID": externalNetworkID,
+		"allocationPool":    allocationPool,
 	}
 	if config.Networks.ID != nil {
 		createNetwork = false
@@ -247,7 +239,8 @@ type TerraformState struct {
 	// SSHKeyName key for accessing SSH key name from outputs in terraform
 	SSHKeyName string
 	// RouterID is the id the router between provider network and the worker subnet.
-	RouterID string
+	RouterID   string
+	RouterIDv6 string
 	// NetworkID is the private worker network.
 	NetworkID   string
 	NetworkIDv6 string
@@ -269,6 +262,7 @@ func ExtractTerraformState(ctx context.Context, tf terraformer.Terraformer) (*Te
 	outputKeys := []string{
 		TerraformOutputKeySSHKeyName,
 		TerraformOutputKeyRouterID,
+		TerraformOutputKeyRouterIDv6,
 		TerraformOutputKeyNetworkID,
 		TerraformOutputKeyNetworkName,
 		TerraformOutputKeySubnetID,
@@ -286,6 +280,7 @@ func ExtractTerraformState(ctx context.Context, tf terraformer.Terraformer) (*Te
 	return &TerraformState{
 		SSHKeyName:        vars[TerraformOutputKeySSHKeyName],
 		RouterID:          vars[TerraformOutputKeyRouterID],
+		RouterIDv6:        vars[TerraformOutputKeyRouterIDv6],
 		NetworkID:         vars[TerraformOutputKeyNetworkID],
 		NetworkName:       vars[TerraformOutputKeyNetworkName],
 		SubnetID:          vars[TerraformOutputKeySubnetID],
@@ -322,14 +317,15 @@ func StatusFromTerraformState(state *TerraformState) *apiv1alpha1.Infrastructure
 			Kind:       "InfrastructureStatus",
 		},
 		Networks: apiv1alpha1.NetworkStatus{
-			ID: state.NetworkID,
-			IDv6:         state.NetworkIDv6,
+			ID:   state.NetworkID,
+			IDv6: state.NetworkIDv6,
 			Name: state.NetworkName,
 			FloatingPool: apiv1alpha1.FloatingPoolStatus{
 				ID: state.FloatingNetworkID,
 			},
 			Router: apiv1alpha1.RouterStatus{
 				ID: state.RouterID,
+				IDv6: state.RouterIDv6,
 			},
 			Subnets: subnets,
 		},

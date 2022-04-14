@@ -89,6 +89,73 @@ var _ = Describe("InfrastructureConfig validation", func() {
 		})
 	})
 
+	Context("AllocationPool", func() {
+		It("should forbid non range addresses", func() {
+			infrastructureConfig.Networks.Workers = "10.250.0.0/16,ade::/110"
+			infrastructureConfig.Networks.AllocationPool = "20ab::"
+
+			errorList := ValidateInfrastructureConfig(infrastructureConfig, &nodes, nilPath)
+
+			Expect(errorList).To(ConsistOfFields(
+				Fields{
+					"Type":   Equal(field.ErrorTypeInvalid),
+					"Field":  Equal("allocationPool"),
+					"Detail": Equal("must contain two v6 addresses seperated by a hyphen '-'"),
+				},
+			))
+		})
+
+		It("should forbid non ipv6 addresses", func() {
+			infrastructureConfig.Networks.Workers = "10.250.0.0/16,ade::/110"
+			infrastructureConfig.Networks.AllocationPool = "wul-ulu"
+
+			errorList := ValidateInfrastructureConfig(infrastructureConfig, &nodes, nilPath)
+
+			Expect(errorList).To(ConsistOfFields(
+				Fields{
+					"Type":   Equal(field.ErrorTypeInvalid),
+					"Field":  Equal("allocationPool"),
+					"Detail": Equal("contains a non IPv6 address"),
+				},
+				Fields{
+					"Type":   Equal(field.ErrorTypeInvalid),
+					"Field":  Equal("allocationPool"),
+					"Detail": Equal("contains a non IPv6 address"),
+				},
+			))
+		})
+
+		It("should forbid non ipv6 addresses not in workers cidr", func() {
+			infrastructureConfig.Networks.Workers = "10.250.0.0/16,ade::/110"
+			infrastructureConfig.Networks.AllocationPool = "adf::-adf::22"
+
+			errorList := ValidateInfrastructureConfig(infrastructureConfig, &nodes, nilPath)
+
+			Expect(errorList).To(ConsistOfFields(
+				Fields{
+					"Type":   Equal(field.ErrorTypeInvalid),
+					"Field":  Equal("allocationPool"),
+					"Detail": Equal("IPv6 address not inside workers CIDR"),
+				},
+				Fields{
+					"Type":   Equal(field.ErrorTypeInvalid),
+					"Field":  Equal("allocationPool"),
+					"Detail": Equal("IPv6 address not inside workers CIDR"),
+				},
+			))
+		})
+
+		It("happy path", func() {
+			infrastructureConfig.Networks.Workers = "10.250.0.0/16,ade::/110"
+			infrastructureConfig.Networks.AllocationPool = "ade::-ade::22"
+
+			errorList := ValidateInfrastructureConfig(infrastructureConfig, &nodes, nilPath)
+
+			Expect(errorList).To(BeEmpty())
+		})
+
+	})
+
 	Context("CIDR", func() {
 		It("should forbid empty workers CIDR", func() {
 			infrastructureConfig.Networks.Workers = ""

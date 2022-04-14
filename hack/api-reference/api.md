@@ -1217,6 +1217,18 @@ string
 </tr>
 <tr>
 <td>
+<code>allocationPool</code></br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>AllocationPool defines the IPs that are assigned to VMs in the network</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>id</code></br>
 <em>
 string
@@ -1414,6 +1426,16 @@ string
 </td>
 <td>
 <p>ID is the Router id.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>idv6</code></br>
+<em>
+string
+</em>
+</td>
+<td>
 </td>
 </tr>
 </tbody>

@@ -44,6 +44,9 @@ type Networks struct {
 	Worker string `json:"worker"`
 	// Workers is a CIDRs of a worker subnet (private) to create (used for the VMs).
 	Workers string `json:"workers"`
+	// AllocationPool defines the IPs that are assigned to VMs in the network
+	// +optional
+	AllocationPool *string `json:"allocationPool"`
 	// ID is the ID of an existing private network.
 	// +optional
 	ID *string `json:"id,omitempty"`
@@ -105,6 +108,7 @@ type NetworkStatus struct {
 type RouterStatus struct {
 	// ID is the Router id.
 	ID string `json:"id"`
+	IDv6 string `json:"idv6"`
 }
 
 // FloatingPoolStatus contains information about the floating pool.

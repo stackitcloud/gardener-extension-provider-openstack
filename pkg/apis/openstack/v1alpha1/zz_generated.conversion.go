@@ -732,6 +732,9 @@ func autoConvert_v1alpha1_Networks_To_openstack_Networks(in *Networks, out *open
 	out.Router = (*openstack.Router)(unsafe.Pointer(in.Router))
 	out.Worker = in.Worker
 	out.Workers = in.Workers
+	if err := v1.Convert_Pointer_string_To_string(&in.AllocationPool, &out.AllocationPool, s); err != nil {
+		return err
+	}
 	out.ID = (*string)(unsafe.Pointer(in.ID))
 	if err := v1.Convert_Pointer_bool_To_bool(&in.DualHomed, &out.DualHomed, s); err != nil {
 		return err
@@ -751,6 +754,9 @@ func autoConvert_openstack_Networks_To_v1alpha1_Networks(in *openstack.Networks,
 	out.Router = (*Router)(unsafe.Pointer(in.Router))
 	out.Worker = in.Worker
 	out.Workers = in.Workers
+	if err := v1.Convert_string_To_Pointer_string(&in.AllocationPool, &out.AllocationPool, s); err != nil {
+		return err
+	}
 	if err := v1.Convert_bool_To_Pointer_bool(&in.DualHomed, &out.DualHomed, s); err != nil {
 		return err
 	}
@@ -830,6 +836,7 @@ func Convert_openstack_Router_To_v1alpha1_Router(in *openstack.Router, out *Rout
 
 func autoConvert_v1alpha1_RouterStatus_To_openstack_RouterStatus(in *RouterStatus, out *openstack.RouterStatus, s conversion.Scope) error {
 	out.ID = in.ID
+	out.IDv6 = in.IDv6
 	return nil
 }
 
@@ -840,6 +847,7 @@ func Convert_v1alpha1_RouterStatus_To_openstack_RouterStatus(in *RouterStatus, o
 
 func autoConvert_openstack_RouterStatus_To_v1alpha1_RouterStatus(in *openstack.RouterStatus, out *RouterStatus, s conversion.Scope) error {
 	out.ID = in.ID
+	out.IDv6 = in.IDv6
 	return nil
 }
 
