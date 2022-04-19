@@ -250,7 +250,7 @@ output "{{ .outputKeys.subnetID }}" {
 
 
 output "{{ .outputKeys.subnetIDv6 }}" {
-{{- if .networks.nodeIPv6 }}
+{{- if .networks.workersIPv6 }}
   value = openstack_networking_subnet_v2.cluster-v6.id
 {{- else }} // use cluster-v4 to prevent crash will not be inserted into infrastructure object
   value = openstack_networking_subnet_v2.cluster-v4.id
