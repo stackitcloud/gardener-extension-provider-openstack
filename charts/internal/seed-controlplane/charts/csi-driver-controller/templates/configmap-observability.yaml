@@ -39,5 +39,5 @@ data:
         target_label: pod
       metric_relabel_configs:
       - source_labels: [ __name__ ]
-        regex: ^(rest_client_requests_total|process_max_fds|process_open_fds)$
+        regex: ^(csi_sidecar_operations_seconds_bucket|csi_sidecar_operations_seconds_count|csi_sidecar_operations_seconds_sum)$
         action: keep
