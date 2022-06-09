@@ -31,7 +31,7 @@ data:
         - __meta_kubernetes_service_name
         - __meta_kubernetes_endpoint_port_name
         action: keep
-        regex: csi-driver-controller;metrics
+        regex: csi-driver-controller;(openstack-csi-provisioner-metrics|openstack-csi-attacher-metrics)
       # common metrics
       - action: labelmap
         regex: __meta_kubernetes_service_label_(.+)

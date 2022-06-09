@@ -8,11 +8,11 @@ metadata:
   namespace: {{ .Release.Namespace }}
 spec:
   ports:
-    - name: openstack-csi-provisioner
+    - name: openstack-csi-provisioner-metrics
       port: 8080
       protocol: TCP
       targetPort: 8080
-    - name: openstack-csi-attacher
+    - name: openstack-csi-attacher-metrics
       port: 8081
       protocol: TCP
       targetPort: 8081
