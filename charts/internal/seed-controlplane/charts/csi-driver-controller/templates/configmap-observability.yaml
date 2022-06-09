@@ -18,3 +18,26 @@ data:
     observedPods:
     - podPrefix: csi-driver-controller
       isExposedToUser: true
+
+  scrape_config: |
+    - job_name: csi-driver-controller
+      scheme: http
+      kubernetes_sd_configs:
+      - role: endpoints
+        namespaces:
+          names: [{{ .Release.Namespace }}]
+      relabel_configs:
+      - source_labels:
+        - __meta_kubernetes_service_name
+        - __meta_kubernetes_endpoint_port_name
+        action: keep
+        regex: csi-driver-controller;(openstack-csi-provisioner-metrics|openstack-csi-attacher-metrics)
+      # common metrics
+      - action: labelmap
+        regex: __meta_kubernetes_service_label_(.+)
+      - source_labels: [ __meta_kubernetes_pod_name ]
+        target_label: pod
+      metric_relabel_configs:
+      - source_labels: [ __name__ ]
+        regex: ^(csi_sidecar_operations_seconds_bucket|csi_sidecar_operations_seconds_count|csi_sidecar_operations_seconds_sum)$
+        action: keep
