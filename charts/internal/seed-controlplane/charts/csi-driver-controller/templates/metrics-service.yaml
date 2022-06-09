@@ -4,7 +4,7 @@ metadata:
   labels:
     app: csi
     role: controller
-  name: csi-driver-controller-metrics
+  name: csi-driver-controller
   namespace: {{ .Release.Namespace }}
 spec:
   ports:
