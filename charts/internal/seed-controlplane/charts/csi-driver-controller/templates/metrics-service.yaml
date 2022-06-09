@@ -1,0 +1,23 @@
+apiVersion: v1
+kind: Service
+metadata:
+  labels:
+    app: csi
+    role: controller
+  name: csi-driver-controller-metrics
+  namespace: {{ .Release.Namespace }}
+spec:
+  ports:
+    - name: openstack-csi-provisioner
+      port: 8080
+      protocol: TCP
+      targetPort: 8080
+    - name: openstack-csi-attacher
+      port: 8081
+      protocol: TCP
+      targetPort: 8081
+  selector:
+    app: csi
+    role: controller
+  type: ClusterIP
+---
