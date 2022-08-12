@@ -147,7 +147,7 @@ require (
 )
 
 replace (
-	github.com/gardener/gardener => github.com/stackitcloud/gardener v1.52.2-ske-1
+	github.com/gardener/gardener => github.com/stackitcloud/gardener v1.53.0-ske-1
 	github.com/gardener/gardener-resource-manager/api => github.com/gardener/gardener-resource-manager/api v0.25.0
 	github.com/gardener/machine-controller-manager => github.com/stackitcloud/machine-controller-manager v0.46.0-ske-1
 	github.com/prometheus/client_golang => github.com/prometheus/client_golang v1.12.1 // keep this value in sync with sigs.k8s.io/controller-runtime

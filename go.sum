@@ -614,8 +614,8 @@ github.com/spf13/viper v1.4.0/go.mod h1:PTJ7Z/lr49W6bUbkmS1V3by4uWynFiR9p7+dSq/y
 github.com/spf13/viper v1.7.0/go.mod h1:8WkrPz2fc9jxqZNCJI/76HCieCp4Q8HaLFoCha5qpdg=
 github.com/spf13/viper v1.11.0 h1:7OX/1FS6n7jHD1zGrZTM7WtY13ZELRyosK4k93oPr44=
 github.com/spf13/viper v1.11.0/go.mod h1:djo0X/bA5+tYVoCn+C7cAYJGcVn/qYLFTG8gdUsX7Zk=
-github.com/stackitcloud/gardener v1.52.2-ske-1 h1:lgmdFlsQsuNsxnkhSR8IYXFMQV7m10GayszANphaZ7s=
-github.com/stackitcloud/gardener v1.52.2-ske-1/go.mod h1:U3AM3738XDByD0BmSD0iOJshXPHoAUstRTeDCceuNs0=
+github.com/stackitcloud/gardener v1.53.0-ske-1 h1:3LujJntyAU74Au9U9B6KvhEffMPle73LOJGXbO7syKE=
+github.com/stackitcloud/gardener v1.53.0-ske-1/go.mod h1:U3AM3738XDByD0BmSD0iOJshXPHoAUstRTeDCceuNs0=
 github.com/stackitcloud/machine-controller-manager v0.46.0-ske-1 h1:QjfL80oJ+yVyX3iy+mXALg2BF7H4haVVNyhq88DhOZQ=
 github.com/stackitcloud/machine-controller-manager v0.46.0-ske-1/go.mod h1:Un8BoUdl+64nkkWfe69XwkwAJNRmSl9J6BTICI/qkbE=
 github.com/stoewer/go-strcase v1.2.0/go.mod h1:IBiWB2sKIp3wVVQ3Y035++gc+knqhUQag1KpM8ahLw8=

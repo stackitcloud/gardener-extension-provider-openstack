@@ -405,8 +405,6 @@ type Loki struct {
 
 // GardenLoki contains configuration for the Loki in garden namespace.
 type GardenLoki struct {
-	// Priority is the priority value for the Loki.
-	Priority *int32
 	// Storage is the disk storage capacity of the central Loki.
 	// Defaults to 100Gi.
 	Storage *resource.Quantity
@@ -416,6 +414,12 @@ type GardenLoki struct {
 type ShootNodeLogging struct {
 	// ShootPurposes determines which shoots can have node logging by their purpose.
 	ShootPurposes []gardencore.ShootPurpose
+}
+
+// ShootEventLogging contains configurations for the shoot event logger.
+type ShootEventLogging struct {
+	// Enabled is used to enable or disable shoot event logger.
+	Enabled *bool
 }
 
 // Logging contains configuration for the logging stack.
@@ -428,6 +432,8 @@ type Logging struct {
 	Loki *Loki
 	// ShootNodeLogging contains configurations for the shoot node logging.
 	ShootNodeLogging *ShootNodeLogging
+	// ShootEventLogging contains configurations for the shoot event logger.
+	ShootEventLogging *ShootEventLogging
 }
 
 // ServerConfiguration contains details for the HTTP(S) servers.

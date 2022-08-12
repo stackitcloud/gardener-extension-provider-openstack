@@ -70,7 +70,7 @@ github.com/gardener/etcd-druid/api/v1alpha1
 ## explicit; go 1.14
 github.com/gardener/external-dns-management/pkg/apis/dns
 github.com/gardener/external-dns-management/pkg/apis/dns/v1alpha1
-# github.com/gardener/gardener v1.50.1 => github.com/stackitcloud/gardener v1.52.2-ske-1
+# github.com/gardener/gardener v1.50.1 => github.com/stackitcloud/gardener v1.53.0-ske-1
 ## explicit; go 1.18
 github.com/gardener/gardener/.github
 github.com/gardener/gardener/.github/ISSUE_TEMPLATE
@@ -1197,7 +1197,7 @@ sigs.k8s.io/structured-merge-diff/v4/value
 # sigs.k8s.io/yaml v1.3.0
 ## explicit; go 1.12
 sigs.k8s.io/yaml
-# github.com/gardener/gardener => github.com/stackitcloud/gardener v1.52.2-ske-1
+# github.com/gardener/gardener => github.com/stackitcloud/gardener v1.53.0-ske-1
 # github.com/gardener/gardener-resource-manager/api => github.com/gardener/gardener-resource-manager/api v0.25.0
 # github.com/gardener/machine-controller-manager => github.com/stackitcloud/machine-controller-manager v0.46.0-ske-1
 # github.com/prometheus/client_golang => github.com/prometheus/client_golang v1.12.1
