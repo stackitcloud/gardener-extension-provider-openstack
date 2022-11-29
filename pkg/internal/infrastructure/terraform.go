@@ -40,6 +40,7 @@ const (
 	// TerraformOutputKeyRouterID is the id the router between provider network and the worker subnet.
 	TerraformOutputKeyRouterID   = "router_id"
 	TerraformOutputKeyRouterIDv6 = "router_id_v6"
+	TerraformOutputKeyRouterIP   = "router_ip"
 	// TerraformOutputKeyNetworkID is the private worker network.
 	TerraformOutputKeyNetworkID = "network_id"
 	// TerraformOutputKeyNetworkName is the private worker network name.
@@ -80,6 +81,7 @@ func ComputeTerraformerTemplateValues(
 		outputKeysConfig = map[string]interface{}{
 			"routerID":          TerraformOutputKeyRouterID,
 			"routerIDv6":        TerraformOutputKeyRouterIDv6,
+			"routerIP":          TerraformOutputKeyRouterIP,
 			"networkID":         TerraformOutputKeyNetworkID,
 			"networkName":       TerraformOutputKeyNetworkName,
 			"keyName":           TerraformOutputKeySSHKeyName,
@@ -241,6 +243,7 @@ type TerraformState struct {
 	// RouterID is the id the router between provider network and the worker subnet.
 	RouterID   string
 	RouterIDv6 string
+	RouterIP   string
 	// NetworkID is the private worker network.
 	NetworkID   string
 	NetworkIDv6 string
@@ -263,6 +266,7 @@ func ExtractTerraformState(ctx context.Context, tf terraformer.Terraformer) (*Te
 		TerraformOutputKeySSHKeyName,
 		TerraformOutputKeyRouterID,
 		TerraformOutputKeyRouterIDv6,
+		TerraformOutputKeyRouterIP,
 		TerraformOutputKeyNetworkID,
 		TerraformOutputKeyNetworkName,
 		TerraformOutputKeySubnetID,
@@ -281,6 +285,7 @@ func ExtractTerraformState(ctx context.Context, tf terraformer.Terraformer) (*Te
 		SSHKeyName:        vars[TerraformOutputKeySSHKeyName],
 		RouterID:          vars[TerraformOutputKeyRouterID],
 		RouterIDv6:        vars[TerraformOutputKeyRouterIDv6],
+		RouterIP:          vars[TerraformOutputKeyRouterIP],
 		NetworkID:         vars[TerraformOutputKeyNetworkID],
 		NetworkName:       vars[TerraformOutputKeyNetworkName],
 		SubnetID:          vars[TerraformOutputKeySubnetID],
@@ -324,8 +329,9 @@ func StatusFromTerraformState(state *TerraformState) *apiv1alpha1.Infrastructure
 				ID: state.FloatingNetworkID,
 			},
 			Router: apiv1alpha1.RouterStatus{
-				ID: state.RouterID,
+				ID:   state.RouterID,
 				IDv6: state.RouterIDv6,
+				IP:   state.RouterIP,
 			},
 			Subnets: subnets,
 		},

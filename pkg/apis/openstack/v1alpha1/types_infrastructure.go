@@ -107,8 +107,9 @@ type NetworkStatus struct {
 // RouterStatus contains information about a generated Router or resources attached to an existing Router.
 type RouterStatus struct {
 	// ID is the Router id.
-	ID string `json:"id"`
+	ID   string `json:"id"`
 	IDv6 string `json:"idv6"`
+	IP   string `json:"ip"`
 }
 
 // FloatingPoolStatus contains information about the floating pool.
