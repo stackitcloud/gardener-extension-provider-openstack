@@ -1438,6 +1438,16 @@ string
 <td>
 </td>
 </tr>
+<tr>
+<td>
+<code>ip</code></br>
+<em>
+string
+</em>
+</td>
+<td>
+</td>
+</tr>
 </tbody>
 </table>
 <h3 id="openstack.provider.extensions.gardener.cloud/v1alpha1.SecurityGroup">SecurityGroup
