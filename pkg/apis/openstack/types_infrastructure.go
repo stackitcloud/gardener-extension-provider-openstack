@@ -100,6 +100,7 @@ type RouterStatus struct {
 	// ID is the Router id.
 	ID   string
 	IDv6 string
+	IP   string
 }
 
 // FloatingPoolStatus contains information about the floating pool.
