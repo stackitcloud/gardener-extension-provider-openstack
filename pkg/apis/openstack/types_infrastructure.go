@@ -53,8 +53,8 @@ type Networks struct {
 	DNSServers *[]string
 	// ID is the ID of an existing private network.
 	ID *string
-	// Subnet is the ID of an existing subnet in network with ID.
-	Subnet *string
+	// SubnetID is the ID of an existing subnet in network with ID.
+	SubnetID *string
 }
 
 // Router indicates whether to use an existing router or create a new one.

@@ -62,6 +62,8 @@ type Networks struct {
 	// DNSServers overrides the default dns configuration from cloud profile
 	// +optional
 	DNSServers *[]string `json:"dnsServers,omitempty"`
+	// SubnetID is the ID of an existing subnet in network with ID.
+	SubnetID *string `json:"subnetID,omitempty"`
 }
 
 // Router indicates whether to use an existing router or create a new one.
