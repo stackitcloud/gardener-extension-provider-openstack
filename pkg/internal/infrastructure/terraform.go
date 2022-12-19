@@ -169,9 +169,9 @@ func ComputeTerraformerTemplateValues(
 		networksConfig["id"] = *config.Networks.ID
 	}
 
-	if config.Networks.Subnet != nil {
+	if config.Networks.SubnetID != nil {
 		createSubnet = false
-		networksConfig["subnet"] = *config.Networks.Subnet
+		networksConfig["subnet"] = *config.Networks.SubnetID
 	}
 
 	return map[string]interface{}{
