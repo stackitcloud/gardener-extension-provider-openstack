@@ -279,7 +279,7 @@ data.openstack_networking_subnet_v2.cluster-v4.id
 {{- end -}}
 {{- define "network-id" -}}
 {{ if .create.network -}}
-openstack_networking_network_v2.cluster-v4.id
+openstack_networking_network_v2.cluster.id
 {{ else -}}
 data.openstack_networking_network_v2.cluster.id
 {{ end -}}
