@@ -76,6 +76,7 @@ admin_state_up = "true"
 }
 {{- end}}
 
+{{ if .create.subnet -}}
 resource "openstack_networking_subnet_v2" "cluster-v4" {
   name            = "{{ .clusterName }}"
   cidr            = "{{ .networks.workers }}"
@@ -86,8 +87,12 @@ resource "openstack_networking_subnet_v2" "cluster-v4" {
   {{- else }}
   dns_nameservers = []
   {{- end }}
-
 }
+{{ else -}}
+data "openstack_networking_subnet_v2" "cluster-v4" {
+  network_id   = "{{ .networks.subnet }}"
+}
+{{- end }}
 
 {{ if .networks.workersIPv6 }}
 resource "openstack_networking_subnet_v2" "cluster-v6" {
@@ -123,7 +128,7 @@ subnet_id = "${openstack_networking_subnet_v2.cluster-v6.id}"
 
 resource "openstack_networking_router_interface_v2" "router_nodes_v4" {
   router_id = {{ .router.id }}
-  subnet_id = openstack_networking_subnet_v2.cluster-v4.id
+  subnet_id = {{ template "subnet-id" $ }}
 }
 
 resource "openstack_networking_secgroup_v2" "cluster" {
@@ -249,7 +254,7 @@ output "{{ .outputKeys.floatingNetworkID }}" {
 }
 
 output "{{ .outputKeys.subnetID }}" {
-  value = openstack_networking_subnet_v2.cluster-v4.id
+  value = {{ template "subnet-id" $ }}
 }
 
 
@@ -265,9 +270,16 @@ output "{{ .outputKeys.subnetIDv6 }}" {
 // Helpers
 
 {{- /* Helper functions */ -}}
+{{- define "subnet-id" -}}
+{{ if .create.subnet -}}
+openstack_networking_subnet_v2.cluster-v4.id
+{{ else -}}
+data.openstack_networking_subnet_v2.cluster-v4.id
+{{ end -}}
+{{- end -}}
 {{- define "network-id" -}}
 {{ if .create.network -}}
-openstack_networking_network_v2.cluster.id
+openstack_networking_network_v2.cluster-v4.id
 {{ else -}}
 data.openstack_networking_network_v2.cluster.id
 {{ end -}}

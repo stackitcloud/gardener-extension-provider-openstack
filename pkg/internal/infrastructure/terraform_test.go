@@ -124,6 +124,7 @@ var _ = Describe("Terraform", func() {
 			expectedCreateValues = map[string]interface{}{
 				"router":  false,
 				"network": true,
+				"subnet":  true,
 			}
 			expectedRouterValues = map[string]interface{}{
 				"id": strconv.Quote("1"),
@@ -205,6 +206,59 @@ var _ = Describe("Terraform", func() {
 			config.Networks.ID = &networkID
 			expectedCreateValues["network"] = false
 			expectedNetworkValues["id"] = networkID
+
+			values, err := ComputeTerraformerTemplateValues(infra, config, cluster)
+			Expect(err).To(BeNil())
+			Expect(values).To(Equal(map[string]interface{}{
+				"openstack":    expectedOpenStackValues,
+				"create":       expectedCreateValues,
+				"dnsServers":   dnsServers,
+				"sshPublicKey": string(infra.Spec.SSHPublicKey),
+				"router":       expectedRouterValues,
+				"clusterName":  infra.Namespace,
+				"networks":     expectedNetworkValues,
+				"outputKeys":   expectedOutputKeysValues,
+			}))
+		})
+
+		It("should correctly compute the terraformer chart values when reusing vpc and subnet", func() {
+			networkID := "networkID"
+			subnetID := "subneID"
+
+			config.Networks.ID = &networkID
+			config.Networks.Subnet = &subnetID
+			expectedCreateValues["network"] = false
+			expectedNetworkValues["id"] = networkID
+			expectedCreateValues["subnet"] = false
+			expectedNetworkValues["subnet"] = subnetID
+
+			values, err := ComputeTerraformerTemplateValues(infra, config, cluster)
+			Expect(err).To(BeNil())
+			Expect(values).To(Equal(map[string]interface{}{
+				"openstack":    expectedOpenStackValues,
+				"create":       expectedCreateValues,
+				"dnsServers":   dnsServers,
+				"sshPublicKey": string(infra.Spec.SSHPublicKey),
+				"router":       expectedRouterValues,
+				"clusterName":  infra.Namespace,
+				"networks":     expectedNetworkValues,
+				"outputKeys":   expectedOutputKeysValues,
+			}))
+		})
+
+		It("should correctly compute the terraformer chart values when reusing vpc and subnet and router", func() {
+			networkID := "networkID"
+			subnetID := "subneID"
+			routerID := "routerID"
+
+			config.Networks.ID = &networkID
+			config.Networks.Subnet = &subnetID
+			config.Networks.Router.ID = routerID
+			expectedCreateValues["network"] = false
+			expectedNetworkValues["id"] = networkID
+			expectedCreateValues["subnet"] = false
+			expectedNetworkValues["subnet"] = subnetID
+			expectedRouterValues["id"] = strconv.Quote(routerID)
 
 			values, err := ComputeTerraformerTemplateValues(infra, config, cluster)
 			Expect(err).To(BeNil())

@@ -75,6 +75,7 @@ func ComputeTerraformerTemplateValues(
 	var (
 		createRouter  = true
 		createNetwork = true
+		createSubnet  = true
 		routerConfig  = map[string]interface{}{
 			"id": DefaultRouterID,
 		}
@@ -168,6 +169,11 @@ func ComputeTerraformerTemplateValues(
 		networksConfig["id"] = *config.Networks.ID
 	}
 
+	if config.Networks.Subnet != nil {
+		createSubnet = false
+		networksConfig["subnet"] = *config.Networks.Subnet
+	}
+
 	return map[string]interface{}{
 		"openstack": map[string]interface{}{
 			"maxApiCallRetries": MaxApiCallRetries,
@@ -178,6 +184,7 @@ func ComputeTerraformerTemplateValues(
 		"create": map[string]interface{}{
 			"router":  createRouter,
 			"network": createNetwork,
+			"subnet":  createSubnet,
 		},
 		"dnsServers":   dnsServers,
 		"sshPublicKey": string(infra.Spec.SSHPublicKey),

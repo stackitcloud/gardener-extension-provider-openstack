@@ -94,6 +94,7 @@ var _ = Describe("Template", func() {
 				"create": map[string]interface{}{
 					"router":  true,
 					"network": true,
+					"subnet":  true,
 				},
 				"router": map[string]interface{}{
 					"id": DefaultRouterID,
