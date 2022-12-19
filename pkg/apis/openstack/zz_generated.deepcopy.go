@@ -536,6 +536,11 @@ func (in *Networks) DeepCopyInto(out *Networks) {
 		*out = new(string)
 		**out = **in
 	}
+	if in.Subnet != nil {
+		in, out := &in.Subnet, &out.Subnet
+		*out = new(string)
+		**out = **in
+	}
 	return
 }
 
