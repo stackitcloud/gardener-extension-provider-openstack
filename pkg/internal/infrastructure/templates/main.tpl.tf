@@ -57,7 +57,7 @@ resource "openstack_networking_router_v2" "router-v6" {
 {{- end }}
 {{ else -}}
 data "openstack_networking_router_v2" "router" {
-  router_id   = "{{ .router.id }}"
+  router_id   = {{ .router.id }}
 }
 {{- end }}
 
