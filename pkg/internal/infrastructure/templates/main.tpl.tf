@@ -94,7 +94,7 @@ resource "openstack_networking_subnet_v2" "cluster-v4" {
 }
 {{ else -}}
 data "openstack_networking_subnet_v2" "cluster-v4" {
-  network_id   = "{{ .networks.subnet }}"
+  subnet_id   = "{{ .networks.subnet }}"
 }
 {{- end }}
 
