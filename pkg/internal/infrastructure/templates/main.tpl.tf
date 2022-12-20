@@ -92,6 +92,12 @@ resource "openstack_networking_subnet_v2" "cluster-v4" {
   dns_nameservers = []
   {{- end }}
 }
+{{ if .create.router -}}
+resource "openstack_networking_router_interface_v2" "router_nodes_v4" {
+  router_id = {{ .router.id }}
+  subnet_id = {{ template "subnet-id" $ }}
+}
+{{- end }}
 {{ else -}}
 data "openstack_networking_subnet_v2" "cluster-v4" {
   subnet_id   = "{{ .networks.subnet }}"
@@ -129,11 +135,6 @@ router_id = "${openstack_networking_router_v2.router-v6.id}"
 subnet_id = "${openstack_networking_subnet_v2.cluster-v6.id}"
 }
 {{- end }}
-
-resource "openstack_networking_router_interface_v2" "router_nodes_v4" {
-  router_id = {{ .router.id }}
-  subnet_id = {{ template "subnet-id" $ }}
-}
 
 resource "openstack_networking_secgroup_v2" "cluster" {
   name                 = "{{ .clusterName }}"
