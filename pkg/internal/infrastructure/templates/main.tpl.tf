@@ -55,6 +55,10 @@ resource "openstack_networking_router_v2" "router-v6" {
   external_network_id = {{ .networks.externalNetworkID | quote }}
 }
 {{- end }}
+{{ else -}}
+data "openstack_networking_router_v2" "router" {
+  router_id   = "{{ .router.id }}"
+}
 {{- end }}
 
 {{ if .create.network -}}
@@ -226,7 +230,7 @@ output "{{ .outputKeys.routerIDv6 }}" {
 }
 
 output "{{ .outputKeys.routerIP }}" {
-  value = openstack_networking_router_v2.router.external_fixed_ip[0].ip_address
+  value = {{ template "router-ip" $ }}
 }
 
 output "{{ .outputKeys.networkID }}" {
@@ -262,7 +266,7 @@ output "{{ .outputKeys.subnetIDv6 }}" {
 {{- if .networks.workersIPv6 }}
   value = openstack_networking_subnet_v2.cluster-v6.id
 {{- else }} // use cluster-v4 to prevent crash will not be inserted into infrastructure object
-  value = openstack_networking_subnet_v2.cluster-v4.id
+  value = {{ template "subnet-id" $ }}
 {{- end }}
 }
 
@@ -277,6 +281,7 @@ openstack_networking_subnet_v2.cluster-v4.id
 data.openstack_networking_subnet_v2.cluster-v4.id
 {{ end -}}
 {{- end -}}
+
 {{- define "network-id" -}}
 {{ if .create.network -}}
 openstack_networking_network_v2.cluster.id
@@ -289,5 +294,13 @@ data.openstack_networking_network_v2.cluster.id
 openstack_networking_network_v2.cluster.name
 {{ else -}}
 data.openstack_networking_network_v2.cluster.name
+{{ end -}}
+{{- end -}}
+
+{{- define "router-ip" -}}
+{{ if .create.router -}}
+openstack_networking_router_v2.router.external_fixed_ip[0].ip_address
+{{ else -}}
+data.openstack_networking_router_v2.router.external_fixed_ip[0].ip_address
 {{ end -}}
 {{- end -}}

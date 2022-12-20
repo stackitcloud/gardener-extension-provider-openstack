@@ -226,7 +226,7 @@ var _ = Describe("Terraform", func() {
 			subnetID := "subneID"
 
 			config.Networks.ID = &networkID
-			config.Networks.Subnet = &subnetID
+			config.Networks.SubnetID = &subnetID
 			expectedCreateValues["network"] = false
 			expectedNetworkValues["id"] = networkID
 			expectedCreateValues["subnet"] = false
@@ -252,7 +252,7 @@ var _ = Describe("Terraform", func() {
 			routerID := "routerID"
 
 			config.Networks.ID = &networkID
-			config.Networks.Subnet = &subnetID
+			config.Networks.SubnetID = &subnetID
 			config.Networks.Router.ID = routerID
 			expectedCreateValues["network"] = false
 			expectedNetworkValues["id"] = networkID
