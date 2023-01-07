@@ -13,7 +13,7 @@ spec:
     updateMode: {{ .Values.vpa.updatePolicy.updateMode | quote }}
   resourcePolicy:
     containerPolicies:
-    - containerName: machine-controller-manager-provider-openstack
+    - containerName: provider-openstack
       minAllowed:
         cpu: {{ .Values.resources.mcmProviderOpenstack.requests.cpu }}
         memory: {{ .Values.resources.mcmProviderOpenstack.requests.memory }}
