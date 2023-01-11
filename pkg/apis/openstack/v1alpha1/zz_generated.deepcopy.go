@@ -512,8 +512,28 @@ func (in *Networks) DeepCopyInto(out *Networks) {
 		*out = new(Router)
 		**out = **in
 	}
+	if in.AllocationPool != nil {
+		in, out := &in.AllocationPool, &out.AllocationPool
+		*out = new(string)
+		**out = **in
+	}
 	if in.ID != nil {
 		in, out := &in.ID, &out.ID
+		*out = new(string)
+		**out = **in
+	}
+	if in.DualHomed != nil {
+		in, out := &in.DualHomed, &out.DualHomed
+		*out = new(bool)
+		**out = **in
+	}
+	if in.SubnetPoolID != nil {
+		in, out := &in.SubnetPoolID, &out.SubnetPoolID
+		*out = new(string)
+		**out = **in
+	}
+	if in.ExternalNetworkID != nil {
+		in, out := &in.ExternalNetworkID, &out.ExternalNetworkID
 		*out = new(string)
 		**out = **in
 	}
