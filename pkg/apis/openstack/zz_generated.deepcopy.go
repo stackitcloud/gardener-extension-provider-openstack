@@ -577,6 +577,15 @@ func (in *Networks) DeepCopyInto(out *Networks) {
 		*out = new(ShareNetwork)
 		**out = **in
 	}
+	if in.DNSServers != nil {
+		in, out := &in.DNSServers, &out.DNSServers
+		*out = new([]string)
+		if **in != nil {
+			in, out := *in, *out
+			*out = make([]string, len(*in))
+			copy(*out, *in)
+		}
+	}
 	return
 }
 
