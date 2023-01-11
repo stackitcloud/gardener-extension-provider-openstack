@@ -31,6 +31,7 @@ spec:
         role: controller
         gardener.cloud/role: controlplane
         networking.gardener.cloud/to-dns: allowed
+        networking.gardener.cloud/from-prometheus: allowed
         networking.gardener.cloud/to-public-networks: allowed
         networking.gardener.cloud/to-private-networks: allowed
         networking.resources.gardener.cloud/to-kube-apiserver-tcp-443: allowed
@@ -92,11 +93,15 @@ spec:
         - --kubeconfig=/var/run/secrets/gardener.cloud/shoot/generic-kubeconfig/kubeconfig
         - --feature-gates=Topology=true
         - --volume-name-prefix=pv-{{ .Release.Namespace }}
+        - --metrics-address=0.0.0.0:8080
         - --default-fstype=ext4
         - --leader-election
         - --leader-election-namespace=kube-system
         - --timeout={{ .Values.timeout }}
         - --v=5
+        ports:
+          - containerPort: 8080
+            name: metrics
         env:
         - name: ADDRESS
           value: {{ .Values.socketPath }}/csi.sock
@@ -121,6 +126,10 @@ spec:
         - --leader-election-namespace=kube-system
         - --timeout={{ .Values.timeout }}
         - --v=5
+        - --http-endpoint=0.0.0.0:8081
+        ports:
+        - containerPort: 8081
+          name: metrics
         env:
         - name: ADDRESS
           value: {{ .Values.socketPath }}/csi.sock
