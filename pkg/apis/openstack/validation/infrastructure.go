@@ -58,6 +58,46 @@ func ValidateInfrastructureConfig(infra *api.InfrastructureConfig, nodesCIDR *st
 		allErrs = append(allErrs, cidrvalidation.ValidateCIDRIsCanonical(networksPath.Child("workers"), infra.Networks.Workers)...)
 	}
 
+	// TODO: This validation code does not work with our dual-stack implementation.
+	// However, we don't deploy gardener-extension-admission-openstack, which is responsible for validating the providerConfigs of Shoot objects.
+	// Hence, this code is currently never called.
+	// The following sections are earlier tries to adapt this code, but it doesn't work in combination with newer upstream versions.
+	// When rebasing our fork onto upstream v1.31.0-dev, Alex and Tim commented this code out because it was not worth fixing.
+
+	//if infra.Networks.Workers != "" {
+	//	for _, workersNetwork := range strings.Split(infra.Networks.Workers, ",") {
+	//		workersCIDR := cidrvalidation.NewCIDR(workersNetwork, networksPath.Child("workers"))
+	//		allErrs = append(allErrs, cidrvalidation.ValidateCIDRParse(workersCIDR)...)
+	//		allErrs = append(allErrs, cidrvalidation.ValidateCIDRIsCanonical(networksPath.Child("workers"), workersNetwork)...)
+	//	}
+	//}
+	//
+	//if infra.Networks.AllocationPool != "" {
+	//	path := networksPath.Child("allocationPool")
+	//	allocationPool := strings.Split(infra.Networks.AllocationPool, "-")
+	//	if len(allocationPool) != 2 {
+	//		allErrs = append(allErrs, field.Invalid(path, infra.Networks.AllocationPool, "must contain two v6 addresses seperated by a hyphen '-'"))
+	//	} else {
+	//		if len(strings.Split(infra.Networks.Workers, ",")) != 2 {
+	//			allErrs = append(allErrs, field.Invalid(path, fldPath.Child("workers"), "is no dual stack annotation"))
+	//		} else {
+	//			_, ipNet, _ := net.ParseCIDR(strings.Split(infra.Networks.Workers, ",")[1])
+	//			for _, allocationAddress := range allocationPool {
+	//				var ip = net.ParseIP(allocationAddress)
+	//				if ip == nil || ip.To4() != nil {
+	//					allErrs = append(allErrs, field.Invalid(path, infra.Networks.AllocationPool, "contains a non IPv6 address"))
+	//					continue
+	//				}
+	//
+	//				if ipNet == nil || !ipNet.Contains(ip) {
+	//					allErrs = append(allErrs, field.Invalid(path, infra.Networks.AllocationPool, "IPv6 address not inside workers CIDR"))
+	//					continue
+	//				}
+	//			}
+	//		}
+	//	}
+	//}
+
 	if nodes != nil {
 		allErrs = append(allErrs, nodes.ValidateSubset(workerCIDR)...)
 	}

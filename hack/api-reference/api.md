@@ -1101,6 +1101,17 @@ string
 </tr>
 <tr>
 <td>
+<code>idv6</code></br>
+<em>
+string
+</em>
+</td>
+<td>
+<p>IDv6 is the v6 Network id.</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>name</code></br>
 <em>
 string
@@ -1207,6 +1218,18 @@ string
 </tr>
 <tr>
 <td>
+<code>allocationPool</code></br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>AllocationPool defines the IPs that are assigned to VMs in the network</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>id</code></br>
 <em>
 string
@@ -1219,6 +1242,40 @@ string
 </tr>
 <tr>
 <td>
+<code>dualHomed</code></br>
+<em>
+bool
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>This flag indicates if one or two L2 networks shall be created</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>subnetPoolID</code></br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>SubnetPoolID</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>externalNetworkID</code></br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>ExternalNetworkID is the default gateway network for ipv6 network router</p>
+</td>
+</tr>
 <tr>
 <td>
 <code>dnsServers</code></br>
@@ -1381,6 +1438,17 @@ string
 </td>
 <td>
 <p>IP is the router ip.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>idv6</code></br>
+<em>
+string
+</em>
+</td>
+<td>
+<p>IDv6 is the v6 Router id.</p>
 </td>
 </tr>
 </tbody>

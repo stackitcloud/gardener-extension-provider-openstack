@@ -121,8 +121,11 @@ var _ = Describe("Machines", func() {
 				machineType       string
 				userData          []byte
 				networkID         string
+				networkIDv6       string
 				podCIDR           string
-				subnetID          string
+				subnetIDv4        string
+				subnetIDv6        string
+				subnetIDs         []string
 				securityGroupName string
 
 				namePool1           string
@@ -177,8 +180,11 @@ var _ = Describe("Machines", func() {
 				machineType = "large"
 				userData = []byte("some-user-data")
 				networkID = "network-id"
+				networkIDv6 = "network-idv6"
 				podCIDR = "1.2.3.4/5"
-				subnetID = "subnetID"
+				subnetIDv4 = "subnetIDv4"
+				subnetIDv6 = "subnetIDv6"
+				subnetIDs = []string{subnetIDv4, subnetIDv6}
 				securityGroupName = "nodes-sec-group"
 
 				namePool1 = "pool-1"
@@ -306,11 +312,16 @@ var _ = Describe("Machines", func() {
 									KeyName: keyName,
 								},
 								Networks: api.NetworkStatus{
-									ID: networkID,
+									ID:   networkID,
+									IDv6: networkIDv6,
 									Subnets: []api.Subnet{
 										{
 											Purpose: api.PurposeNodes,
-											ID:      subnetID,
+											ID:      subnetIDv4,
+										},
+										{
+											Purpose: api.PurposeNodes,
+											ID:      subnetIDv6,
 										},
 									},
 								},
@@ -397,7 +408,9 @@ var _ = Describe("Machines", func() {
 						"machineType":    machineType,
 						"keyName":        keyName,
 						"networkID":      networkID,
-						"subnetID":       subnetID,
+						"networkIDv6":    networkIDv6,
+						"subnetID":       subnetIDv4,
+						"subnetIDs":      subnetIDs,
 						"podNetworkCidr": podCIDR,
 						"securityGroups": []string{securityGroupName},
 						"tags": map[string]string{

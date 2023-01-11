@@ -41,6 +41,14 @@ type Networks struct {
 	Worker string
 	// Workers is a CIDRs of a worker subnet (private) to create (used for the VMs).
 	Workers string
+	// AllocationPool defines the IPs that are assigned to VMs in the network
+	AllocationPool string
+	// DualHomed Decides if the nodes should have two interfaces
+	DualHomed bool
+	// SubnetPoolID of need SubnetPool for subnet reservation
+	SubnetPoolID *string
+	// ExternalNetworkID is the default gateway network for ipv6 network router
+	ExternalNetworkID *string
 	// DNSServers overrides the default dns configuration from cloud profile
 	DNSServers *[]string
 	// ID is the ID of an existing private network.
@@ -76,6 +84,8 @@ type NodeStatus struct {
 type NetworkStatus struct {
 	// ID is the Network id.
 	ID string
+	// IDv6 is the v6 Network id.
+	IDv6 string
 	// Name is the Network name.
 	Name string
 	// FloatingPool contains information about the floating pool.
@@ -92,6 +102,8 @@ type RouterStatus struct {
 	ID string
 	// IP is the router ip.
 	IP string
+	// IDv6 is the v6 Router id.
+	IDv6 string
 }
 
 // FloatingPoolStatus contains information about the floating pool.

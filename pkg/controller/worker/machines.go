@@ -95,7 +95,12 @@ func (w *workerDelegate) generateMachineConfig(ctx context.Context) error {
 		return err
 	}
 
+	// keep because of backward compatibility
 	subnet, err := helper.FindSubnetByPurpose(infrastructureStatus.Networks.Subnets, api.PurposeNodes)
+	if err != nil {
+		return err
+	}
+	subnets, err := helper.FindSubnetsByPurpose(infrastructureStatus.Networks.Subnets, api.PurposeNodes)
 	if err != nil {
 		return err
 	}
@@ -143,6 +148,7 @@ func (w *workerDelegate) generateMachineConfig(ctx context.Context) error {
 				"machineType":      pool.MachineType,
 				"keyName":          infrastructureStatus.Node.KeyName,
 				"networkID":        infrastructureStatus.Networks.ID,
+				"networkIDv6":      infrastructureStatus.Networks.IDv6,
 				"podNetworkCidr":   extensionscontroller.GetPodNetwork(w.cluster),
 				"securityGroups":   []string{nodesSecurityGroup.Name},
 				"tags": utils.MergeStringMaps(NormalizeLabelsForMachineClass(pool.Labels), map[string]string{
@@ -159,6 +165,12 @@ func (w *workerDelegate) generateMachineConfig(ctx context.Context) error {
 			}
 
 			machineClassSpec["subnetID"] = subnet.ID
+
+			var subnetIDs = make([]string, 0)
+			for _, subnet := range subnets {
+				subnetIDs = append(subnetIDs, subnet.ID)
+			}
+			machineClassSpec["subnetIDs"] = subnetIDs
 
 			if volumeSize > 0 {
 				machineClassSpec["rootDiskSize"] = volumeSize
