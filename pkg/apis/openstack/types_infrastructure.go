@@ -45,6 +45,8 @@ type Networks struct {
 	ID *string
 	// ShareNetwork holds information about the share network (used for shared file systems like NFS)
 	ShareNetwork *ShareNetwork
+	// DNSServers overrides the default dns configuration from cloud profile
+	DNSServers *[]string
 }
 
 // Router indicates whether to use an existing router or create a new one.
