@@ -122,6 +122,7 @@ spec:
         image: {{ index .Values.images "csi-liveness-probe" }}
         args:
         - --csi-address={{ .Values.socketPath }}
+        - --probe-timeout=3m
 {{- if .Values.resources.livenessProbe }}
         resources:
 {{ toYaml .Values.resources.livenessProbe | indent 10 }}
