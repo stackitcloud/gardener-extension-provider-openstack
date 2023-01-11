@@ -839,6 +839,7 @@ func autoConvert_v1alpha1_Networks_To_openstack_Networks(in *Networks, out *open
 	out.Workers = in.Workers
 	out.ID = (*string)(unsafe.Pointer(in.ID))
 	out.ShareNetwork = (*openstack.ShareNetwork)(unsafe.Pointer(in.ShareNetwork))
+	out.DNSServers = (*[]string)(unsafe.Pointer(in.DNSServers))
 	return nil
 }
 
@@ -853,6 +854,7 @@ func autoConvert_openstack_Networks_To_v1alpha1_Networks(in *openstack.Networks,
 	out.Workers = in.Workers
 	out.ID = (*string)(unsafe.Pointer(in.ID))
 	out.ShareNetwork = (*ShareNetwork)(unsafe.Pointer(in.ShareNetwork))
+	out.DNSServers = (*[]string)(unsafe.Pointer(in.DNSServers))
 	return nil
 }
 
