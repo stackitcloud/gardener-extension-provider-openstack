@@ -127,6 +127,9 @@ spec:
         - --timeout={{ .Values.timeout }}
         - --v=5
         - --http-endpoint=0.0.0.0:8081
+        - --retry-interval-start=1m
+        - --retry-interval-max=15m
+        - --reconcile-sync=5m
         ports:
         - containerPort: 8081
           name: metrics
@@ -197,6 +200,7 @@ spec:
         image: {{ index .Values.images "csi-liveness-probe" }}
         args:
         - --csi-address=/csi/csi.sock
+        - --probe-timeout=3m
 {{- if .Values.resources.livenessProbe }}
         resources:
 {{ toYaml .Values.resources.livenessProbe | indent 10 }}
