@@ -108,6 +108,13 @@ func ComputeTerraformerTemplateValues(
 		routerConfig["floatingPoolSubnet"] = *floatingPoolSubnet
 	}
 
+	// Configure DNS that cloud profile is default and overridable by shoot config
+	var dnsServers []string
+	dnsServers = cloudProfileConfig.DNSServers
+	if config.Networks.DNSServers != nil {
+		dnsServers = *config.Networks.DNSServers
+	}
+
 	keyStoneURL, err := helper.FindKeyStoneURL(cloudProfileConfig.KeyStoneURLs, cloudProfileConfig.KeyStoneURL, infra.Spec.Region)
 	if err != nil {
 		return nil, err
@@ -150,7 +157,7 @@ func ComputeTerraformerTemplateValues(
 			"network":      createNetwork,
 			"shareNetwork": createShareNetwork,
 		},
-		"dnsServers":   cloudProfileConfig.DNSServers,
+		"dnsServers":   dnsServers,
 		"sshPublicKey": string(infra.Spec.SSHPublicKey),
 		"router":       routerConfig,
 		"clusterName":  infra.Namespace,
