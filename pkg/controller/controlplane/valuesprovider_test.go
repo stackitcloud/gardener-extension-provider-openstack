@@ -574,6 +574,7 @@ var _ = Describe("ValuesProvider", func() {
 			"secrets": map[string]interface{}{
 				"server": "cloud-controller-manager-server",
 			},
+			"controllers": "*,-service",
 		})
 
 		BeforeEach(func() {

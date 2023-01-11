@@ -744,6 +744,11 @@ func getCCMChartValues(
 		},
 	}
 
+	// allows disabling shoot's octavia
+	if cpConfig.LoadBalancerProvider != "octavia" {
+		values["controllers"] = "*,-service"
+	}
+
 	if userAgentHeaders != nil {
 		values["userAgentHeaders"] = userAgentHeaders
 	}
