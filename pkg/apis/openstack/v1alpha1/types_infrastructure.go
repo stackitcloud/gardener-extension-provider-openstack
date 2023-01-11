@@ -50,6 +50,9 @@ type Networks struct {
 	// ShareNetwork holds information about the share network (used for shared file systems like NFS)
 	// +optional
 	ShareNetwork *ShareNetwork `json:"shareNetwork,omitempty"`
+	// DNSServers overrides the default dns configuration from cloud profile
+	// +optional
+	DNSServers *[]string `json:"dnsServers,omitempty"`
 }
 
 // Router indicates whether to use an existing router or create a new one.
