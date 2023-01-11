@@ -512,6 +512,15 @@ func (in *Networks) DeepCopyInto(out *Networks) {
 		*out = new(Router)
 		**out = **in
 	}
+	if in.DNSServers != nil {
+		in, out := &in.DNSServers, &out.DNSServers
+		*out = new([]string)
+		if **in != nil {
+			in, out := *in, *out
+			*out = make([]string, len(*in))
+			copy(*out, *in)
+		}
+	}
 	if in.ID != nil {
 		in, out := &in.ID, &out.ID
 		*out = new(string)
