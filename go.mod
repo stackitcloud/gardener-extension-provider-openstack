@@ -50,6 +50,7 @@ require (
 	github.com/evanphx/json-patch v4.12.0+incompatible // indirect
 	github.com/evanphx/json-patch/v5 v5.6.0 // indirect
 	github.com/fatih/color v1.13.0 // indirect
+	github.com/frankban/quicktest v1.14.3 // indirect
 	github.com/fsnotify/fsnotify v1.5.4 // indirect
 	github.com/gardener/hvpa-controller/api v0.5.0 // indirect
 	github.com/ghodss/yaml v1.0.0 // indirect
@@ -76,7 +77,6 @@ require (
 	github.com/inconshreveable/mousetrap v1.0.0 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
-	github.com/kr/pretty v0.3.0 // indirect
 	github.com/kubernetes-csi/external-snapshotter/v2 v2.1.4 // indirect
 	github.com/magiconair/properties v1.8.6 // indirect
 	github.com/mailru/easyjson v0.7.6 // indirect
@@ -150,4 +150,9 @@ replace (
 	k8s.io/api => k8s.io/api v0.25.0
 	k8s.io/apimachinery => k8s.io/apimachinery v0.25.0
 	k8s.io/client-go => k8s.io/client-go v0.25.0
+)
+
+replace (
+	github.com/gardener/gardener => github.com/stackitcloud/gardener v1.47.1-0.20230111091020-e1ab1d862a93 // branch feature/rebase-v1.62.1
+	github.com/gardener/machine-controller-manager => github.com/stackitcloud/machine-controller-manager v0.46.1-0.20230105132056-511fadbf86a2 // branch feature/rebase-v0.47.0
 )
