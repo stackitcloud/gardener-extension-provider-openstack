@@ -125,7 +125,7 @@ spec:
         - --leader-election
         - --leader-election-namespace=kube-system
         - --timeout={{ .Values.timeout }}
-        - --v=5
+        - --v=3
         - --http-endpoint=0.0.0.0:8081
         - --retry-interval-start=1m
         - --retry-interval-max=15m
