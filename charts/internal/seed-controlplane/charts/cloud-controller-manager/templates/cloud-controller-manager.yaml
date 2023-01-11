@@ -41,6 +41,9 @@ spec:
         imagePullPolicy: IfNotPresent
         command:
         - /bin/openstack-cloud-controller-manager
+        {{- if .Values.controllers }}
+        - --controllers={{ .Values.controllers }}
+        {{- end }}
         - --allocate-node-cidrs=true
         - --cloud-provider=openstack
         - --cloud-config=/etc/kubernetes/cloudprovider/cloudprovider.conf
