@@ -41,6 +41,8 @@ type Networks struct {
 	Worker string
 	// Workers is a CIDRs of a worker subnet (private) to create (used for the VMs).
 	Workers string
+	// DNSServers overrides the default dns configuration from cloud profile
+	DNSServers *[]string
 	// ID is the ID of an existing private network.
 	ID *string
 }
