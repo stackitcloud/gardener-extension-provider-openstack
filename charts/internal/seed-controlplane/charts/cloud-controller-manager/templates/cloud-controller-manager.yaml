@@ -76,8 +76,8 @@ spec:
           successThreshold: 1
           failureThreshold: 2
           initialDelaySeconds: 15
-          periodSeconds: 10
-          timeoutSeconds: 15
+          periodSeconds: 30
+          timeoutSeconds: 180
         ports:
         - containerPort: {{ include "cloud-controller-manager.port" . }}
           name: metrics
