@@ -153,6 +153,6 @@ replace (
 )
 
 replace (
-	github.com/gardener/gardener => github.com/stackitcloud/gardener v1.47.1-0.20230111091020-e1ab1d862a93 // branch feature/rebase-v1.62.1
-	github.com/gardener/machine-controller-manager => github.com/stackitcloud/machine-controller-manager v0.46.1-0.20230105132056-511fadbf86a2 // branch feature/rebase-v0.47.0
+	github.com/gardener/gardener => github.com/stackitcloud/gardener v1.62.1-ske-2
+	github.com/gardener/machine-controller-manager => github.com/stackitcloud/machine-controller-manager v0.47.0-ske-1
 )
