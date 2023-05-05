@@ -15,9 +15,18 @@
 package v1alpha1
 
 import (
+	"k8s.io/apimachinery/pkg/api/resource"
 	"k8s.io/apimachinery/pkg/runtime"
 )
 
 func addDefaultingFuncs(scheme *runtime.Scheme) error {
 	return RegisterDefaults(scheme)
+}
+
+// SetDefaults_BastionVolume defaults the BastionVolume type.
+func SetDefaults_BastionVolume(obj *BastionVolume) {
+	if obj.Size == nil {
+		defaultBastionVolumeSize := resource.MustParse("10Gi")
+		obj.Size = &defaultBastionVolumeSize
+	}
 }

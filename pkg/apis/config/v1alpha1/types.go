@@ -73,4 +73,18 @@ type BastionConfig struct {
 	ImageRef string `json:"imageRef,omitempty"`
 	// FlavorRef is the openstack flavorRef reference
 	FlavorRef string `json:"flavorRef,omitempty"`
+	// Volume specifies if a boot disk volume should be attached to the server and which properties it should have.
+	// If Volume is unset, no volume is attached to the server.
+	// +optional
+	Volume *BastionVolume `json:"volume,omitempty"`
+}
+
+// BastionVolume configures the boot disk volume for Bastion servers.
+type BastionVolume struct {
+	// Type specifies the volume type of the boot disk volume.
+	Type string `json:"type,omitempty"`
+	// Size specifies the size of the boot disk volume.
+	// Defaults to 10Gi.
+	// +optional
+	Size *resource.Quantity `json:"size,omitempty"`
 }

@@ -139,6 +139,66 @@ string
 <p>FlavorRef is the openstack flavorRef reference</p>
 </td>
 </tr>
+<tr>
+<td>
+<code>volume</code></br>
+<em>
+<a href="#openstack.provider.extensions.config.gardener.cloud/v1alpha1.BastionVolume">
+BastionVolume
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Volume specifies if a boot disk volume should be attached to the server and which properties it should have.
+If Volume is unset, no volume is attached to the server.</p>
+</td>
+</tr>
+</tbody>
+</table>
+<h3 id="openstack.provider.extensions.config.gardener.cloud/v1alpha1.BastionVolume">BastionVolume
+</h3>
+<p>
+(<em>Appears on:</em>
+<a href="#openstack.provider.extensions.config.gardener.cloud/v1alpha1.BastionConfig">BastionConfig</a>)
+</p>
+<p>
+<p>BastionVolume configures the boot disk volume for Bastion servers.</p>
+</p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Description</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>
+<code>type</code></br>
+<em>
+string
+</em>
+</td>
+<td>
+<p>Type specifies the volume type of the boot disk volume.</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>size</code></br>
+<em>
+<a href="https://godoc.org/k8s.io/apimachinery/pkg/api/resource#Quantity">
+k8s.io/apimachinery/pkg/api/resource.Quantity
+</a>
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>Size specifies the size of the boot disk volume.
+Defaults to 10Gi.</p>
+</td>
+</tr>
 </tbody>
 </table>
 <h3 id="openstack.provider.extensions.config.gardener.cloud/v1alpha1.ETCD">ETCD

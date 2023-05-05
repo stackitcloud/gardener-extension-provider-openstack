@@ -17,3 +17,6 @@ etcd:
 bastionConfig:
   imageRef: ""
   flavorRef: ""
+  #volume:
+  #  type: storage_premium_perf1
+  #  size: 10Gi
