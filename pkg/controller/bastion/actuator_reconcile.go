@@ -107,12 +107,12 @@ func (a *actuator) Reconcile(ctx context.Context, log logr.Logger, bastion *exte
 		return util.DetermineError(err, helper.KnownCodes)
 	}
 
-	fipid, err := ensurePublicIPAddress(opt, log, networkingClient, infraStatus)
+	fipID, err := ensurePublicIPAddress(opt, log, networkingClient, infraStatus)
 	if err != nil {
 		return util.DetermineError(err, helper.KnownCodes)
 	}
 
-	err = ensureAssociateFIPWithInstance(computeClient, instance, fipid)
+	err = ensureAssociateFIPWithInstance(computeClient, instance, fipID)
 	if err != nil {
 		return util.DetermineError(err, helper.KnownCodes)
 	}
@@ -155,7 +155,7 @@ func ensurePublicIPAddress(opt *Options, log logr.Logger, client openstackclient
 		return nil, err
 	}
 
-	if len(fips) != 0 && fips[0].Status == "ACTIVE" {
+	if len(fips) != 0 {
 		return &fips[0], nil
 	}
 
