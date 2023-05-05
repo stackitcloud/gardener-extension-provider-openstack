@@ -411,11 +411,16 @@ func ensureSecurityGroupRules(log logr.Logger, client openstackclient.Networking
 	}
 
 	var wantedRules []rules.CreateOpts
+	wantedRules = append(wantedRules,
+		// allow servers to perform DHCP discovery needed for bootstrapping (depends on OpenStack environment)
+		EgressAllowToDHCPServer(opt, secGroupID),
+		// allow servers to call the metadata service needed for bootstrapping (depends on OpenStack environment)
+		EgressAllowToMetadataService(opt, secGroupID),
+		EgressAllowSSHToWorker(opt, secGroupID, infraStatus.SecurityGroups[0].ID),
+	)
+
 	for _, ingressPermission := range ingressPermissions {
-		wantedRules = append(wantedRules,
-			IngressAllowSSH(opt, ingressPermission.EtherType, secGroupID, ingressPermission.CIDR),
-			EgressAllowSSHToWorker(opt, secGroupID, infraStatus.SecurityGroups[0].ID),
-		)
+		wantedRules = append(wantedRules, IngressAllowSSH(opt, ingressPermission.EtherType, secGroupID, ingressPermission.CIDR))
 	}
 
 	currentRules, err := listRules(client, secGroupID)

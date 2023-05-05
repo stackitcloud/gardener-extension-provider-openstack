@@ -15,6 +15,8 @@
 package bastion
 
 import (
+	"fmt"
+
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/rules"
 )
 
@@ -43,5 +45,32 @@ func EgressAllowSSHToWorker(opt *Options, secGroupID string, remoteGroupID strin
 		Protocol:      "tcp",
 		SecGroupID:    secGroupID,
 		RemoteGroupID: remoteGroupID,
+	}
+}
+
+// EgressAllowToDHCPServer allows egress to the DHCP server.
+func EgressAllowToDHCPServer(opt *Options, secGroupID string) rules.CreateOpts {
+	return rules.CreateOpts{
+		Direction:    "egress",
+		Description:  fmt.Sprintf("%s-allow-to-dhcp-server", opt.BastionInstanceName),
+		EtherType:    rules.EtherType4,
+		Protocol:     "udp",
+		PortRangeMin: 67,
+		PortRangeMax: 67,
+		SecGroupID:   secGroupID,
+	}
+}
+
+// EgressAllowToMetadataService allows egress to the metadata service.
+func EgressAllowToMetadataService(opt *Options, secGroupID string) rules.CreateOpts {
+	return rules.CreateOpts{
+		Direction:      "egress",
+		Description:    fmt.Sprintf("%s-allow-to-metadata-service", opt.BastionInstanceName),
+		EtherType:      rules.EtherType4,
+		RemoteIPPrefix: "169.254.169.254/32",
+		Protocol:       "tcp",
+		PortRangeMin:   80,
+		PortRangeMax:   80,
+		SecGroupID:     secGroupID,
 	}
 }
