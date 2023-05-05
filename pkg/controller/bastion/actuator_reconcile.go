@@ -77,12 +77,12 @@ func (a *actuator) Reconcile(ctx context.Context, log logr.Logger, bastion *exte
 		return util.DetermineError(fmt.Errorf("could not create Openstack client factory: %w", err), helper.KnownCodes)
 	}
 
-	computeClient, err := openstackClientFactory.Compute()
+	computeClient, err := openstackClientFactory.Compute(openstackclient.WithRegion(opt.Region))
 	if err != nil {
 		return util.DetermineError(err, helper.KnownCodes)
 	}
 
-	networkingClient, err := openstackClientFactory.Networking()
+	networkingClient, err := openstackClientFactory.Networking(openstackclient.WithRegion(opt.Region))
 	if err != nil {
 		return util.DetermineError(err, helper.KnownCodes)
 	}
