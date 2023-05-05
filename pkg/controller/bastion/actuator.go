@@ -61,10 +61,6 @@ func getBastionInstance(client openstackclient.Compute, name string) ([]servers.
 	return client.FindServersByName(name)
 }
 
-func createBastionInstance(client openstackclient.Compute, parameters servers.CreateOpts) (*servers.Server, error) {
-	return client.CreateServer(parameters)
-}
-
 func deleteBastionInstance(client openstackclient.Compute, id string) error {
 	return client.DeleteServer(id)
 }

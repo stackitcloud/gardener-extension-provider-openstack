@@ -26,6 +26,8 @@ import (
 	ctrlerror "github.com/gardener/gardener/pkg/controllerutils/reconciler"
 	"github.com/go-logr/logr"
 	"github.com/gophercloud/gophercloud"
+	"github.com/gophercloud/gophercloud/openstack/blockstorage/v3/volumes"
+	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/bootfromvolume"
 	computefip "github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/floatingips"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/servers"
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/layer3/floatingips"
@@ -33,6 +35,8 @@ import (
 	"github.com/gophercloud/gophercloud/openstack/networking/v2/extensions/security/rules"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/equality"
+	"k8s.io/apimachinery/pkg/api/resource"
+	"k8s.io/apimachinery/pkg/util/sets"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/gardener/gardener-extension-provider-openstack/pkg/apis/config"
@@ -82,6 +86,11 @@ func (a *actuator) Reconcile(ctx context.Context, log logr.Logger, bastion *exte
 		return util.DetermineError(err, helper.KnownCodes)
 	}
 
+	blockStorageClient, err := openstackClientFactory.BlockStorage(openstackclient.WithRegion(opt.Region))
+	if err != nil {
+		return util.DetermineError(err, helper.KnownCodes)
+	}
+
 	networkingClient, err := openstackClientFactory.Networking(openstackclient.WithRegion(opt.Region))
 	if err != nil {
 		return util.DetermineError(err, helper.KnownCodes)
@@ -102,7 +111,7 @@ func (a *actuator) Reconcile(ctx context.Context, log logr.Logger, bastion *exte
 		return util.DetermineError(err, helper.KnownCodes)
 	}
 
-	instance, err := ensureComputeInstance(log, computeClient, a.bastionConfig, infraStatus, opt)
+	instance, err := ensureComputeInstance(log, computeClient, blockStorageClient, a.bastionConfig, infraStatus, opt)
 	if err != nil || instance == nil {
 		return util.DetermineError(err, helper.KnownCodes)
 	}
@@ -178,7 +187,7 @@ func ensurePublicIPAddress(opt *Options, log logr.Logger, client openstackclient
 	return fip, nil
 }
 
-func ensureComputeInstance(log logr.Logger, client openstackclient.Compute, bastionConfig *config.BastionConfig, infraStatus *openstackapi.InfrastructureStatus, opt *Options) (*servers.Server, error) {
+func ensureComputeInstance(log logr.Logger, client openstackclient.Compute, blockStorageClient openstackclient.BlockStorage, bastionConfig *config.BastionConfig, infraStatus *openstackapi.InfrastructureStatus, opt *Options) (*servers.Server, error) {
 	instances, err := getBastionInstance(client, opt.BastionInstanceName)
 	if openstackclient.IgnoreNotFoundError(err) != nil {
 		return nil, err
@@ -211,11 +220,12 @@ func ensureComputeInstance(log logr.Logger, client openstackclient.Compute, bast
 	if len(images) == 0 {
 		return nil, errors.New("imageID not found")
 	}
+	imageID := images[0].ID
 
 	createOpts := servers.CreateOpts{
 		Name:           opt.BastionInstanceName,
 		FlavorRef:      flavorID,
-		ImageRef:       images[0].ID,
+		ImageRef:       imageID,
 		SecurityGroups: []string{opt.SecurityGroup},
 		Networks:       []servers.Network{{UUID: infraStatus.Networks.ID}},
 		UserData:       opt.UserData,
@@ -224,12 +234,97 @@ func ensureComputeInstance(log logr.Logger, client openstackclient.Compute, bast
 		AvailabilityZone: opt.Zone,
 	}
 
-	instance, err := createBastionInstance(client, createOpts)
+	var instance *servers.Server
+
+	if bastionConfig.Volume != nil {
+		// ensure volume
+		var volumeID string
+		volumeID, err = ensureVolume(log, blockStorageClient, bastionConfig.Volume, imageID, opt)
+		if err != nil {
+			return nil, fmt.Errorf("failed to ensure volume for bastion compute instance: %w", err)
+		}
+
+		instance, err = client.BootFromVolume(bootfromvolume.CreateOptsExt{
+			CreateOptsBuilder: createOpts,
+			BlockDevice: []bootfromvolume.BlockDevice{{
+				UUID:                volumeID,
+				DeleteOnTermination: true,
+				SourceType:          bootfromvolume.SourceVolume,
+				DestinationType:     bootfromvolume.DestinationVolume,
+			}},
+		})
+	} else {
+		instance, err = client.CreateServer(createOpts)
+	}
+
 	if err != nil {
 		return nil, fmt.Errorf("failed to create bastion compute instance: %w ", err)
 	}
 
 	return instance, nil
+}
+
+var pendingVolumeStatuses = sets.New(openstackclient.VolumeStatusCreating, openstackclient.VolumeStatusDownloading)
+
+func ensureVolume(log logr.Logger, client openstackclient.BlockStorage, volumeConfig *config.BastionVolume, imageID string, opt *Options) (string, error) {
+	volumeID, err := client.VolumeIDFromName(opt.BastionInstanceName)
+	if err != nil && !openstackclient.IsNotFoundError(err) {
+		return "", err
+	}
+
+	sizeQuantity := resource.MustParse("10Gi")
+	if volumeConfig.Size != nil {
+		sizeQuantity = *volumeConfig.Size
+	}
+
+	if openstackclient.IsNotFoundError(err) {
+		volume, err := client.CreateVolume(volumes.CreateOpts{
+			Name:             opt.BastionInstanceName,
+			VolumeType:       volumeConfig.Type,
+			Size:             int(sizeQuantity.ScaledValue(resource.Giga)),
+			ImageID:          imageID,
+			AvailabilityZone: opt.Zone,
+			Metadata: map[string]string{
+				"bastion":             opt.BastionInstanceName,
+				"bastion-for-cluster": opt.ShootName,
+			},
+		})
+		if err != nil {
+			return "", fmt.Errorf("failed to created volume [Name=%s]: %v", opt.BastionInstanceName, err)
+		}
+
+		volumeID = volume.ID
+		log.Info("Created volume for bastion", "volumeID", volumeID)
+	}
+
+	if err := ensureVolumeStatus(client, volumeID, openstackclient.VolumeStatusAvailable, pendingVolumeStatuses); err != nil {
+		return "", err
+	}
+
+	log.Info("Volume for bastion is ready", "volumeID", volumeID)
+	return volumeID, nil
+}
+
+func ensureVolumeStatus(client openstackclient.BlockStorage, volumeID string, target string, pendingStatuses sets.Set[string]) error {
+	current, err := client.GetVolume(volumeID)
+	if err != nil {
+		return err
+	}
+
+	if current.Status == target {
+		return nil
+	}
+
+	// wait as long as volume is in one of the pending statuses
+	if pendingStatuses.Has(current.Status) {
+		return &ctrlerror.RequeueAfterError{
+			RequeueAfter: 5 * time.Second,
+			Cause:        fmt.Errorf("volume for bastion %s is not ready yet, status is %s, waiting for status to be %s", volumeID, current.Status, target),
+		}
+	}
+
+	// treat all other statuses as errors
+	return fmt.Errorf("volume for bastion %s is in status %s but should be %s", volumeID, current.Status, target)
 }
 
 func getInstanceEndpoints(instance *servers.Server, opt *Options) (*bastionEndpoints, error) {
