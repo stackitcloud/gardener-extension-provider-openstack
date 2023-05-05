@@ -219,6 +219,9 @@ func ensureComputeInstance(log logr.Logger, client openstackclient.Compute, bast
 		SecurityGroups: []string{opt.SecurityGroup},
 		Networks:       []servers.Network{{UUID: infraStatus.Networks.ID}},
 		UserData:       opt.UserData,
+		// Explicitly select a zone based on the shoot spec.
+		// If we need to attach a boot disk, the volume needs to be in the same zone as the server.
+		AvailabilityZone: opt.Zone,
 	}
 
 	instance, err := createBastionInstance(client, createOpts)

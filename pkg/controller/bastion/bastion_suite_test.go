@@ -63,6 +63,7 @@ var _ = Describe("Bastion", func() {
 				Name:      "cloudprovider",
 			}))
 			Expect(options.Region).To(Equal("eu-nl-1"))
+			Expect(options.Zone).To(Equal("eu-nl-1-a"))
 		})
 	})
 
@@ -257,6 +258,10 @@ func createShootTestStruct() *gardencorev1beta1.Shoot {
 						FloatingPoolName: "FloatingIP-external-monsoon-testing",
 					},
 				},
+				Workers: []gardencorev1beta1.Worker{{
+					Name:  "foo",
+					Zones: []string{"eu-nl-1-a"},
+				}},
 			},
 		},
 	}

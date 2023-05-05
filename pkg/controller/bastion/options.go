@@ -39,6 +39,7 @@ const (
 type Options struct {
 	BastionInstanceName string
 	Region              string
+	Zone                string
 	ShootName           string
 	SecretReference     corev1.SecretReference
 	SecurityGroup       string
@@ -54,19 +55,23 @@ func DetermineOptions(bastion *extensionsv1alpha1.Bastion, cluster *controller.C
 		return nil, err
 	}
 
-	secretReference := corev1.SecretReference{
-		Namespace: clusterName,
-		Name:      v1beta1constants.SecretNameCloudProvider,
-	}
-
-	return &Options{
+	o := &Options{
 		ShootName:           clusterName,
 		BastionInstanceName: baseResourceName,
-		SecretReference:     secretReference,
-		SecurityGroup:       securityGroupName(baseResourceName),
-		Region:              cluster.Shoot.Spec.Region,
-		UserData:            []byte(base64.StdEncoding.EncodeToString(bastion.Spec.UserData)),
-	}, nil
+		SecretReference: corev1.SecretReference{
+			Namespace: clusterName,
+			Name:      v1beta1constants.SecretNameCloudProvider,
+		},
+		SecurityGroup: securityGroupName(baseResourceName),
+		Region:        cluster.Shoot.Spec.Region,
+		UserData:      []byte(base64.StdEncoding.EncodeToString(bastion.Spec.UserData)),
+	}
+
+	if workers := cluster.Shoot.Spec.Provider.Workers; len(workers) > 0 && len(workers[0].Zones) > 0 {
+		o.Zone = workers[0].Zones[0]
+	}
+
+	return o, nil
 }
 
 func generateBastionBaseResourceName(clusterName string, bastionName string) (string, error) {
