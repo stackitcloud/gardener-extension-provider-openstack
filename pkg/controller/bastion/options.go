@@ -28,7 +28,7 @@ import (
 )
 
 const (
-	//maxLengthForBaseName for "base" name due to fact that we use this name to name other openstack resources,
+	// maxLengthForBaseName for "base" name due to fact that we use this name to name other openstack resources,
 	maxLengthForBaseName = 33
 )
 
@@ -49,8 +49,6 @@ type Options struct {
 // function does not create any IaaS resources.
 func DetermineOptions(bastion *extensionsv1alpha1.Bastion, cluster *controller.Cluster) (*Options, error) {
 	clusterName := cluster.ObjectMeta.Name
-	region := cluster.Shoot.Spec.Region
-
 	baseResourceName, err := generateBastionBaseResourceName(clusterName, bastion.Name)
 	if err != nil {
 		return nil, err
@@ -66,7 +64,7 @@ func DetermineOptions(bastion *extensionsv1alpha1.Bastion, cluster *controller.C
 		BastionInstanceName: baseResourceName,
 		SecretReference:     secretReference,
 		SecurityGroup:       securityGroupName(baseResourceName),
-		Region:              region,
+		Region:              cluster.Shoot.Spec.Region,
 		UserData:            []byte(base64.StdEncoding.EncodeToString(bastion.Spec.UserData)),
 	}, nil
 }

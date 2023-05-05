@@ -107,16 +107,6 @@ func (a *actuator) Reconcile(ctx context.Context, log logr.Logger, bastion *exte
 		return util.DetermineError(err, helper.KnownCodes)
 	}
 
-	infrastructureConfig := &openstackapi.InfrastructureConfig{}
-
-	if cluster.Shoot.Spec.Provider.InfrastructureConfig.Raw == nil {
-		return errors.New("infrastructureConfig raw must not be empty")
-	}
-
-	if _, _, err := a.Decoder().Decode(cluster.Shoot.Spec.Provider.InfrastructureConfig.Raw, nil, infrastructureConfig); err != nil {
-		return fmt.Errorf("could not decode InfrastructureConfig of cluster Profile': %w", err)
-	}
-
 	fipid, err := ensurePublicIPAddress(opt, log, networkingClient, infraStatus)
 	if err != nil {
 		return util.DetermineError(err, helper.KnownCodes)
