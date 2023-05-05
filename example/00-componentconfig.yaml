@@ -15,8 +15,8 @@ etcd:
 #healthCheckConfig:
 #  syncPeriod: 30s
 bastionConfig:
-  imageRef: ""
-  flavorRef: ""
-  #volume:
-  #  type: storage_premium_perf1
-  #  size: 10Gi
+  imageRef: ske_flatcar-3374.2.5
+  flavorRef: c1.1
+  volume:
+    type: storage_premium_perf1
+    size: 10Gi
