@@ -287,11 +287,8 @@ func ensureAssociateFIPWithInstance(client openstackclient.Compute, instance *se
 	}
 
 	if fipid != "" {
+		// already attached/associated
 		return nil
-	}
-
-	if floatingIP.Status != "ACTIVE" || instance.Status != "ACTIVE" {
-		return fmt.Errorf("instance or floating ip address not ready yet")
 	}
 
 	associateOpts := computefip.AssociateOpts{
