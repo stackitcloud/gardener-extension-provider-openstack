@@ -19,6 +19,7 @@ import (
 	"context"
 
 	"github.com/gophercloud/gophercloud"
+	"github.com/gophercloud/gophercloud/openstack/blockstorage/v3/volumes"
 	computefip "github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/floatingips"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/extensions/servergroups"
 	"github.com/gophercloud/gophercloud/openstack/compute/v2/images"
@@ -64,6 +65,7 @@ type Option func(opts gophercloud.EndpointOpts) gophercloud.EndpointOpts
 type Factory interface {
 	Compute(options ...Option) (Compute, error)
 	Storage(options ...Option) (Storage, error)
+	BlockStorage(options ...Option) (BlockStorage, error)
 	DNS(options ...Option) (DNS, error)
 	Networking(options ...Option) (Networking, error)
 }
@@ -75,6 +77,16 @@ type Storage interface {
 	DeleteContainerIfExists(ctx context.Context, container string) error
 }
 
+// BlockStorage describes the operations of a client interacting with OpenStack's BlockStorage service.
+type BlockStorage interface {
+	// GetVolume retrieves information about a volume.
+	GetVolume(id string) (*volumes.Volume, error)
+	// VolumeIDFromName resolves the given volume name to a unique ID.
+	VolumeIDFromName(name string) (string, error)
+	// CreateVolume creates a volume.
+	CreateVolume(opts volumes.CreateOptsBuilder) (*volumes.Volume, error)
+}
+
 // Compute describes the operations of a client interacting with OpenStack's Compute service.
 type Compute interface {
 	CreateServerGroup(name, policy string) (*servergroups.ServerGroup, error)
@@ -82,6 +94,8 @@ type Compute interface {
 	DeleteServerGroup(id string) error
 	// Server
 	CreateServer(createOpts servers.CreateOpts) (*servers.Server, error)
+	// BootFromVolume creates a server from a block device mapping.
+	BootFromVolume(createOpts servers.CreateOptsBuilder) (*servers.Server, error)
 	DeleteServer(id string) error
 	ListServerGroups() ([]servergroups.ServerGroup, error)
 	FindServersByName(name string) ([]servers.Server, error)

@@ -129,6 +129,22 @@ func (oc *OpenstackClientFactory) Storage(options ...Option) (Storage, error) {
 	}, nil
 }
 
+// BlockStorage returns a BlockStorage client. The client uses Cinder v3 API for issuing calls.
+func (oc *OpenstackClientFactory) BlockStorage(options ...Option) (BlockStorage, error) {
+	eo := gophercloud.EndpointOpts{}
+	for _, opt := range options {
+		eo = opt(eo)
+	}
+	storageClient, err := openstack.NewBlockStorageV3(oc.providerClient, eo)
+	if err != nil {
+		return nil, err
+	}
+
+	return &BlockStorageClient{
+		client: storageClient,
+	}, nil
+}
+
 // Compute returns a Compute client. The client uses Nova v2 API for issuing calls.
 func (oc *OpenstackClientFactory) Compute(options ...Option) (Compute, error) {
 	eo := gophercloud.EndpointOpts{}
@@ -184,6 +200,10 @@ func (oc *OpenstackClientFactory) Networking(options ...Option) (Networking, err
 func IsNotFoundError(err error) bool {
 	if err == nil {
 		return false
+	}
+
+	if _, ok := err.(gophercloud.ErrResourceNotFound); ok {
+		return true
 	}
 
 	if _, ok := err.(gophercloud.ErrDefault404); ok {

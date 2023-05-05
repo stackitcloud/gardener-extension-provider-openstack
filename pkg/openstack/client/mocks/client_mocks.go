@@ -45,6 +45,25 @@ func (m *MockFactory) EXPECT() *MockFactoryMockRecorder {
 	return m.recorder
 }
 
+// BlockStorage mocks base method.
+func (m *MockFactory) BlockStorage(arg0 ...client.Option) (client.BlockStorage, error) {
+	m.ctrl.T.Helper()
+	varargs := []interface{}{}
+	for _, a := range arg0 {
+		varargs = append(varargs, a)
+	}
+	ret := m.ctrl.Call(m, "BlockStorage", varargs...)
+	ret0, _ := ret[0].(client.BlockStorage)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// BlockStorage indicates an expected call of BlockStorage.
+func (mr *MockFactoryMockRecorder) BlockStorage(arg0 ...interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BlockStorage", reflect.TypeOf((*MockFactory)(nil).BlockStorage), arg0...)
+}
+
 // Compute mocks base method.
 func (m *MockFactory) Compute(arg0 ...client.Option) (client.Compute, error) {
 	m.ctrl.T.Helper()
@@ -194,6 +213,21 @@ func (m *MockCompute) AssociateFIPWithInstance(arg0 string, arg1 floatingips.Ass
 func (mr *MockComputeMockRecorder) AssociateFIPWithInstance(arg0, arg1 interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "AssociateFIPWithInstance", reflect.TypeOf((*MockCompute)(nil).AssociateFIPWithInstance), arg0, arg1)
+}
+
+// BootFromVolume mocks base method.
+func (m *MockCompute) BootFromVolume(arg0 servers.CreateOptsBuilder) (*servers.Server, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "BootFromVolume", arg0)
+	ret0, _ := ret[0].(*servers.Server)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// BootFromVolume indicates an expected call of BootFromVolume.
+func (mr *MockComputeMockRecorder) BootFromVolume(arg0 interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "BootFromVolume", reflect.TypeOf((*MockCompute)(nil).BootFromVolume), arg0)
 }
 
 // CreateServer mocks base method.

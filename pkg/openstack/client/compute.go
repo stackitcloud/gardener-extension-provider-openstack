@@ -84,6 +84,11 @@ func (c *ComputeClient) CreateServer(createOpts servers.CreateOpts) (*servers.Se
 	return servers.Create(c.client, createOpts).Extract()
 }
 
+// BootFromVolume creates a server from a block device mapping.
+func (c *ComputeClient) BootFromVolume(createOpts servers.CreateOptsBuilder) (*servers.Server, error) {
+	return servers.Create(c.client, createOpts).Extract()
+}
+
 // DeleteServer delete the Compute service.
 func (c *ComputeClient) DeleteServer(id string) error {
 	return servers.Delete(c.client, id).ExtractErr()

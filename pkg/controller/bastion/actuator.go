@@ -165,5 +165,12 @@ func bastionConfigCheck(bastionConfig *controllerconfig.BastionConfig) error {
 	if bastionConfig.ImageRef == "" {
 		return errors.New("bastion not supported as no Image is configured for the bastion host machine")
 	}
+
+	if bastionConfig.Volume != nil {
+		if bastionConfig.Volume.Type == "" {
+			return errors.New("bastion not supported as no Volume Type is configured for the bastion host machine")
+		}
+	}
+
 	return nil
 }
