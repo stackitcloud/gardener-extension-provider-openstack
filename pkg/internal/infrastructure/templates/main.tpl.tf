@@ -25,6 +25,28 @@ provider "openstack" {
 {{ end }}
 }
 
+// Moved IPv6 stuff, which is needed to migrate from the DS setup. Can be removed with next version.
+moved {
+  from = openstack_networking_subnet_v2.cluster-v4
+  to   = openstack_networking_subnet_v2.cluster
+}
+moved {
+  from = openstack_networking_router_interface_v2.router_nodes_v4
+  to   = openstack_networking_router_interface_v2.router_nodes
+}
+moved {
+  from = openstack_networking_secgroup_rule_v2.cluster_egress_v4
+  to   = openstack_networking_secgroup_rule_v2.cluster_egress
+}
+moved {
+  from = openstack_networking_secgroup_rule_v2.cluster_self_v4
+  to   = openstack_networking_secgroup_rule_v2.cluster_self
+}
+moved {
+  from = openstack_networking_secgroup_rule_v2.cluster_tcp_all_v4
+  to   = openstack_networking_secgroup_rule_v2.cluster_tcp_all
+}
+
 //=====================================================================
 //= Networking: Router/Interfaces/Net/SubNet/SecGroup/SecRules
 //=====================================================================
