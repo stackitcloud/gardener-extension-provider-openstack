@@ -79,7 +79,8 @@ func RegisterHealthChecks(mgr manager.Manager, opts healthcheck.DefaultAddArgs) 
 				HealthCheck:   general.NewSeedDeploymentHealthChecker(openstack.CSISnapshotValidationName),
 			},
 		},
-		sets.New[gardencorev1beta1.ConditionType](),
+		// TODO(post v1.73): Remove this conditionTypesToRemove the future.
+		sets.New[gardencorev1beta1.ConditionType](gardencorev1beta1.ShootSystemComponentsHealthy),
 	); err != nil {
 		return err
 	}
@@ -105,7 +106,8 @@ func RegisterHealthChecks(mgr manager.Manager, opts healthcheck.DefaultAddArgs) 
 				},
 			},
 		},
-		sets.New[gardencorev1beta1.ConditionType](),
+		// TODO(post v1.73): Remove this conditionTypesToRemove the future.
+		sets.New[gardencorev1beta1.ConditionType](gardencorev1beta1.ShootSystemComponentsHealthy),
 	)
 }
 
