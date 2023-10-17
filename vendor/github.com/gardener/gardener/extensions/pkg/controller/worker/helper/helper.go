@@ -16,11 +16,13 @@ package helper
 
 import (
 	"fmt"
+	"regexp"
 	"strings"
 
 	machinev1alpha1 "github.com/gardener/machine-controller-manager/pkg/apis/machine/v1alpha1"
 	"github.com/hashicorp/go-multierror"
 
+	gardencorev1beta1 "github.com/gardener/gardener/pkg/apis/core/v1beta1"
 	errorsutils "github.com/gardener/gardener/pkg/utils/errors"
 )
 
@@ -30,6 +32,33 @@ const (
 	MachineSetKind = "MachineSet"
 	// MachineDeploymentKind is the kind of the owner reference of a machine deployment
 	MachineDeploymentKind = "MachineDeployment"
+)
+
+// TODO(nschad): Remove with Gardner v1.76+
+// SEE: https://dev.azure.com/schwarzit/schwarzit.ske/_workitems/edit/536673
+var (
+	unauthenticatedRegexp               = regexp.MustCompile(`(?i)(Authentication failed|invalid character|invalid_client|cannot fetch token|InvalidSecretAccessKey)`)
+	unauthorizedRegexp                  = regexp.MustCompile(`(?i)(Unauthorized|SignatureDoesNotMatch|invalid_grant|Authorization Profile was not found|no active subscriptions|not authorized|AccessDenied|PolicyNotAuthorized)`)
+	quotaExceededRegexp                 = regexp.MustCompile(`(?i)((?:^|[^t]|(?:[^s]|^)t|(?:[^e]|^)st|(?:[^u]|^)est|(?:[^q]|^)uest|(?:[^e]|^)quest|(?:[^r]|^)equest)LimitExceeded|Quotas|Quota.*exceeded|exceeded quota|Quota has been met|QUOTA_EXCEEDED|Maximum number of ports exceeded|VolumeSizeExceedsAvailableQuota)`)
+	rateLimitsExceededRegexp            = regexp.MustCompile(`(?i)(RequestLimitExceeded|Throttling|Too many requests)`)
+	dependenciesRegexp                  = regexp.MustCompile(`(?i)(PendingVerification|Access Not Configured|accessNotConfigured|DependencyViolation|OptInRequired|Conflict|inactive billing state|timeout while waiting for state to become|InvalidCidrBlock|already busy for|internal server error|A resource with the ID|There are not enough hosts available)`)
+	retryableDependenciesRegexp         = regexp.MustCompile(`(?i)(RetryableError)`)
+	resourcesDepletedRegexp             = regexp.MustCompile(`(?i)(not available in the current hardware cluster|out of stock)`)
+	configurationProblemRegexp          = regexp.MustCompile(`(?i)(not supported in your requested Availability Zone|notFound|Invalid value|violates constraint|no attached internet gateway found|Your query returned no results|invalid VPC attributes|unrecognized feature gate|runtime-config invalid key|strict decoder error|not allowed to configure an unsupported|error during apply of object .* is invalid:|duplicate zones|overlapping zones)`)
+	retryableConfigurationProblemRegexp = regexp.MustCompile(`(?i)(is misconfigured and requires zero voluntary evictions|SDK.CanNotResolveEndpoint|The requested configuration is currently not supported)`)
+
+	// KnownCodes maps Gardener error codes to respective regex.
+	KnownCodes = map[gardencorev1beta1.ErrorCode]func(string) bool{
+		gardencorev1beta1.ErrorInfraUnauthenticated:          unauthenticatedRegexp.MatchString,
+		gardencorev1beta1.ErrorInfraUnauthorized:             unauthorizedRegexp.MatchString,
+		gardencorev1beta1.ErrorInfraQuotaExceeded:            quotaExceededRegexp.MatchString,
+		gardencorev1beta1.ErrorInfraRateLimitsExceeded:       rateLimitsExceededRegexp.MatchString,
+		gardencorev1beta1.ErrorInfraDependencies:             dependenciesRegexp.MatchString,
+		gardencorev1beta1.ErrorRetryableInfraDependencies:    retryableDependenciesRegexp.MatchString,
+		gardencorev1beta1.ErrorInfraResourcesDepleted:        resourcesDepletedRegexp.MatchString,
+		gardencorev1beta1.ErrorConfigurationProblem:          configurationProblemRegexp.MatchString,
+		gardencorev1beta1.ErrorRetryableConfigurationProblem: retryableConfigurationProblemRegexp.MatchString,
+	}
 )
 
 // BuildOwnerToMachinesMap builds a map from a slice of machinev1alpha1.Machine, that maps the owner reference

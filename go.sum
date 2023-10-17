@@ -129,8 +129,6 @@ github.com/fsnotify/fsnotify v1.6.0 h1:n+5WquG0fcWoWp6xPWfHdbskMCQaFnG6PfBrh1Ky4
 github.com/fsnotify/fsnotify v1.6.0/go.mod h1:sl3t1tCWJFWoRz9R8WJCbQihKKwmorjAbSClcnxKAGw=
 github.com/gardener/etcd-druid v0.18.1 h1:dcId4WayxlZiKvDMxLZHmmvWFXjTBFVqQWmqB5/8mdM=
 github.com/gardener/etcd-druid v0.18.1/go.mod h1:Bn4doVhryu6GWdXaYlVNy7TZMjUSMr5EjChei06KX0w=
-github.com/gardener/gardener v1.73.0 h1:ZjYmv8GeLwh/kZ3Ou5+WrzGsyf9C/pgpSCDH8HKh0zo=
-github.com/gardener/gardener v1.73.0/go.mod h1:uSkzPPoAEvdU1fvciTAsZFxPQ9vQpMbMFRJLMQgdfEQ=
 github.com/gardener/gardener-extension-networking-calico v1.28.0 h1:eeUYuYjRB3xSww+fmCnyF+RPPqsO4Zro7Gg0MfMDfFk=
 github.com/gardener/gardener-extension-networking-calico v1.28.0/go.mod h1:DhaXVgUF4LAsS+6UlBK8kUKM8mhI+YHl/9/+WK3zfMk=
 github.com/gardener/gardener-extension-networking-cilium v1.20.0 h1:4s+eXjX34M2S4WfKqWnj3T48B/CeKwOjwoNFiTO3N/g=
@@ -480,6 +478,8 @@ github.com/spf13/pflag v1.0.5 h1:iy+VFUOCP1a+8yFto/drg2CJ5u0yRoB7fZw3DKv/JXA=
 github.com/spf13/pflag v1.0.5/go.mod h1:McXfInJRrz4CZXVZOBLb0bTZqETkiAhM9Iw0y3An2Bg=
 github.com/spf13/viper v1.11.0 h1:7OX/1FS6n7jHD1zGrZTM7WtY13ZELRyosK4k93oPr44=
 github.com/spf13/viper v1.11.0/go.mod h1:djo0X/bA5+tYVoCn+C7cAYJGcVn/qYLFTG8gdUsX7Zk=
+github.com/stackitcloud/gardener v1.74.3-ske-2 h1:RkU/Pa4eMTC11hFeIVIyL1mUlps1MQ+uPhVGfvSg7lI=
+github.com/stackitcloud/gardener v1.74.3-ske-2/go.mod h1:ELm2XWXh2Qtemvt8LNmVLaEprQ9iADTXyOpwSVHUtGk=
 github.com/stoewer/go-strcase v1.2.0/go.mod h1:IBiWB2sKIp3wVVQ3Y035++gc+knqhUQag1KpM8ahLw8=
 github.com/stretchr/objx v0.1.0/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
 github.com/stretchr/objx v0.1.1/go.mod h1:HFkY916IF+rwdDfMAkV7OtwuqBVzrE8GR6GFx+wExME=
@@ -973,7 +973,6 @@ k8s.io/apimachinery v0.26.2/go.mod h1:ats7nN1LExKHvJ9TmwootT00Yz05MuYqPXEXaVeOy5
 k8s.io/apimachinery v0.26.3 h1:dQx6PNETJ7nODU3XPtrwkfuubs6w7sX0M8n61zHIV/k=
 k8s.io/apimachinery v0.26.3/go.mod h1:ats7nN1LExKHvJ9TmwootT00Yz05MuYqPXEXaVeOy5I=
 k8s.io/apiserver v0.26.3 h1:blBpv+yOiozkPH2aqClhJmJY+rp53Tgfac4SKPDJnU4=
-k8s.io/apiserver v0.26.3/go.mod h1:CJe/VoQNcXdhm67EvaVjYXxR3QyfwpceKPuPaeLibTA=
 k8s.io/autoscaler/vertical-pod-autoscaler v0.9.0/go.mod h1:PwWTGRRCxefhAezrDbG/tRYSAW7etHjjMPAr8fXKVAA=
 k8s.io/autoscaler/vertical-pod-autoscaler v0.13.0 h1:pH6AsxeBZcyX6KBqcnl7SPIJqbN1d59RrEBuIE6Rq6c=
 k8s.io/autoscaler/vertical-pod-autoscaler v0.13.0/go.mod h1:LraL5kR2xX7jb4VMCG6/tUH4I75uRHlnzC0VWQHcyWk=

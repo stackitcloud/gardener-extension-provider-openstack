@@ -133,7 +133,6 @@ require (
 	gopkg.in/yaml.v3 v3.0.1 // indirect
 	istio.io/api v0.0.0-20230217221049-9d422bf48675 // indirect
 	istio.io/client-go v1.17.1 // indirect
-	k8s.io/apiserver v0.26.3 // indirect
 	k8s.io/gengo v0.0.0-20220902162205-c0856e24416d // indirect
 	k8s.io/helm v2.16.1+incompatible // indirect
 	k8s.io/klog v1.0.0 // indirect
@@ -148,3 +147,5 @@ require (
 )
 
 replace k8s.io/client-go => k8s.io/client-go v0.26.2
+
+replace github.com/gardener/gardener => github.com/stackitcloud/gardener v1.74.3-ske-2
