@@ -29,6 +29,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
 	extensionscontroller "github.com/gardener/gardener/extensions/pkg/controller"
+	extensionsworkerhelper "github.com/gardener/gardener/extensions/pkg/controller/worker/helper"
+	"github.com/gardener/gardener/extensions/pkg/util"
 	extensionsv1alpha1 "github.com/gardener/gardener/pkg/apis/extensions/v1alpha1"
 	"github.com/gardener/gardener/pkg/utils/flow"
 	kubernetesutils "github.com/gardener/gardener/pkg/utils/kubernetes"
@@ -101,7 +103,11 @@ func (a *genericActuator) Delete(ctx context.Context, log logr.Logger, worker *e
 
 	// Wait until all machine resources have been properly deleted.
 	if err := a.waitUntilMachineResourcesDeleted(ctx, log, worker, workerDelegate); err != nil {
-		return fmt.Errorf("Failed while waiting for all machine resources to be deleted: %w", err)
+		//TODO(nschad): The following 2 lines become obsolete and wrong after Gardener v1.76+ and openstack-extension v1.37+
+		// SEE: https://dev.azure.com/schwarzit/schwarzit.ske/_workitems/edit/536673
+		newError := fmt.Errorf("Failed while waiting for all machine resources to be deleted: %w", err)
+		newError = util.DetermineError(newError, extensionsworkerhelper.KnownCodes)
+		return newError
 	}
 
 	// Wait until the machine class credentials secret has been released.
