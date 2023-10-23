@@ -586,6 +586,11 @@ func (in *Networks) DeepCopyInto(out *Networks) {
 			copy(*out, *in)
 		}
 	}
+	if in.SNANetwork != nil {
+		in, out := &in.SNANetwork, &out.SNANetwork
+		*out = new(string)
+		**out = **in
+	}
 	return
 }
 

@@ -53,6 +53,10 @@ type Networks struct {
 	// DNSServers overrides the default dns configuration from cloud profile
 	// +optional
 	DNSServers *[]string `json:"dnsServers,omitempty"`
+
+	// SNANetwork for testing setting custom values
+	// +optional
+	SNANetwork *string `json:"snaNetwork,omitempty"`
 }
 
 // Router indicates whether to use an existing router or create a new one.

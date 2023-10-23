@@ -47,6 +47,9 @@ type Networks struct {
 	ShareNetwork *ShareNetwork
 	// DNSServers overrides the default dns configuration from cloud profile
 	DNSServers *[]string
+
+	// SNANetwork for testing setting custom values
+	SNANetwork *string
 }
 
 // Router indicates whether to use an existing router or create a new one.
