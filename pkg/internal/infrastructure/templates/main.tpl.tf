@@ -91,6 +91,7 @@ data "openstack_networking_network_v2" "cluster" {
 }
 {{- end }}
 
+{{ if .create.subnet -}}
 resource "openstack_networking_subnet_v2" "cluster" {
   name            = "{{ .clusterName }}"
   cidr            = "{{ .networks.workers }}"
@@ -102,11 +103,18 @@ resource "openstack_networking_subnet_v2" "cluster" {
   dns_nameservers = []
   {{- end }}
 }
+{{ else -}}
+data "openstack_networking_subnet_v2" "cluster" {
+  subnet_id = "{{ .networks.subnet }}"
+}
+{{- end }}
 
+{{ if (or (.create.router) (.create.subnet)) }}
 resource "openstack_networking_router_interface_v2" "router_nodes" {
   router_id = {{ .router.id }}
-  subnet_id = openstack_networking_subnet_v2.cluster.id
+  subnet_id = {{ template "subnet-id" $ }}
 }
+{{- end }}
 
 resource "openstack_networking_secgroup_v2" "cluster" {
   name                 = "{{ .clusterName }}"
@@ -215,7 +223,7 @@ output "{{ .outputKeys.floatingNetworkID }}" {
 }
 
 output "{{ .outputKeys.subnetID }}" {
-  value = openstack_networking_subnet_v2.cluster.id
+  value = {{ template "subnet-id" $ }}
 }
 
 {{ if .create.shareNetwork -}}
@@ -229,8 +237,14 @@ output "{{ .outputKeys.shareNetworkName }}" {
 {{- end }}
 
 // Helpers
+{{- define "subnet-id" -}}
+{{ if .create.subnet -}}
+openstack_networking_subnet_v2.cluster.id
+{{ else -}}
+data.openstack_networking_subnet_v2.cluster.id
+{{ end -}}
+{{- end -}}
 
-{{- /* Helper functions */ -}}
 {{- define "network-id" -}}
 {{ if .create.network -}}
 openstack_networking_network_v2.cluster.id
@@ -238,6 +252,7 @@ openstack_networking_network_v2.cluster.id
 data.openstack_networking_network_v2.cluster.id
 {{ end -}}
 {{- end -}}
+
 {{- define "network-name" -}}
 {{ if .create.network -}}
 openstack_networking_network_v2.cluster.name
@@ -245,6 +260,7 @@ openstack_networking_network_v2.cluster.name
 data.openstack_networking_network_v2.cluster.name
 {{ end -}}
 {{- end -}}
+
 {{- define "router-ip" -}}
 {{ if .create.router -}}
 openstack_networking_router_v2.router.external_fixed_ip[0].ip_address
