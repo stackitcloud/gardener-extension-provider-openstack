@@ -72,7 +72,10 @@ func (c *FlowContext) buildDeleteGraph() *flow.Graph {
 			if subnetID == nil {
 				return nil
 			}
-			return infrastructure.CleanupKubernetesLoadbalancers(ctx, c.LogFromContext(ctx), c.loadbalancing, *subnetID, c.namespace)
+			// STACKIT Openstack has no Loadbalancer API, so we are skipping this call, see
+			// https://github.com/gardener/gardener-extension-provider-openstack/issues/672
+			// return infrastructure.CleanupKubernetesLoadbalancers(ctx, c.LogFromContext(ctx), c.loadbalancing, *subnetID, c.namespace)
+			return nil
 		},
 		Timeout(defaultTimeout),
 	)
