@@ -111,10 +111,13 @@ func (a *actuator) deleteWithTerraformer(ctx context.Context, log logr.Logger, i
 	if err != nil {
 		return util.DetermineError(err, helper.KnownCodes)
 	}
-	loadbalancerClient, err := openstackClient.Loadbalancing()
-	if err != nil {
-		return util.DetermineError(err, helper.KnownCodes)
-	}
+
+	// STACKIT Openstack has no Loadbalancer API, so we are skipping this call, see
+	// https://github.com/gardener/gardener-extension-provider-openstack/issues/672
+	// loadbalancerClient, err := openstackClient.Loadbalancing()
+	// if err != nil {
+	// 	return util.DetermineError(err, helper.KnownCodes)
+	// }
 
 	stateInitializer := terraformer.StateConfigMapInitializerFunc(terraformer.CreateState)
 	tf = tf.InitializeWith(ctx, terraformer.DefaultInitializer(a.client, terraformFiles.Main, terraformFiles.Variables, terraformFiles.TFVars, stateInitializer)).SetEnvVars(internal.TerraformerEnvVars(infra.Spec.SecretRef, credentials)...)
@@ -130,14 +133,16 @@ func (a *actuator) deleteWithTerraformer(ctx context.Context, log logr.Logger, i
 	}
 
 	var (
-		g                              = flow.NewGraph("Openstack infrastructure destruction")
-		destroyKubernetesLoadbalancers = g.Add(flow.Task{
-			Name: "Destroying Kubernetes loadbalancers entries",
-			Fn: flow.TaskFn(func(ctx context.Context) error {
-				return a.cleanupKubernetesLoadbalancers(ctx, log, loadbalancerClient, vars[infrastructure.TerraformOutputKeySubnetID], infra.Namespace)
-			}).RetryUntilTimeout(10*time.Second, 5*time.Minute),
-			SkipIf: !configExists,
-		})
+		g = flow.NewGraph("Openstack infrastructure destruction")
+		// STACKIT Openstack has no Loadbalancer API, so we are skipping this call, see
+		// https://github.com/gardener/gardener-extension-provider-openstack/issues/672
+		// destroyKubernetesLoadbalancers = g.Add(flow.Task{
+		// 	Name: "Destroying Kubernetes loadbalancers entries",
+		// 	Fn: flow.TaskFn(func(ctx context.Context) error {
+		// 		return a.cleanupKubernetesLoadbalancers(ctx, log, loadbalancerClient, vars[infrastructure.TerraformOutputKeySubnetID], infra.Namespace)
+		// 	}).RetryUntilTimeout(10*time.Second, 5*time.Minute),
+		// 	SkipIf: !configExists,
+		// })
 		destroyKubernetesRoutes = g.Add(flow.Task{
 			Name: "Destroying Kubernetes route entries",
 			Fn: flow.TaskFn(func(ctx context.Context) error {
@@ -149,7 +154,7 @@ func (a *actuator) deleteWithTerraformer(ctx context.Context, log logr.Logger, i
 		_ = g.Add(flow.Task{
 			Name:         "Destroying Shoot infrastructure",
 			Fn:           tf.Destroy,
-			Dependencies: flow.NewTaskIDs(destroyKubernetesRoutes, destroyKubernetesLoadbalancers),
+			Dependencies: flow.NewTaskIDs(destroyKubernetesRoutes),
 		})
 
 		f = g.Compile()
