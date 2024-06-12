@@ -1,5 +1,7 @@
 # [Gardener Extension for OpenStack provider](https://gardener.cloud)
 
+boo!
+
 [![CI Build status](https://concourse.ci.gardener.cloud/api/v1/teams/gardener-tests/pipelines/gardener-extension-provider-openstack-master/jobs/master-head-update-job/badge)](https://concourse.ci.gardener.cloud/teams/gardener-tests/pipelines/gardener-extension-provider-openstack-master/jobs/master-head-update-job)
 [![Go Report Card](https://goreportcard.com/badge/github.com/gardener/gardener-extension-provider-openstack)](https://goreportcard.com/report/github.com/gardener/gardener-extension-provider-openstack)
 
@@ -51,7 +53,7 @@ Static code checks and tests can be executed by running `make verify`. We are us
 
 Feedback and contributions are always welcome. Please report bugs or suggestions as [GitHub issues](https://github.com/gardener/gardener-extension-provider-openstack/issues) or join our [Slack channel #gardener](https://kubernetes.slack.com/messages/gardener) (please invite yourself to the Kubernetes workspace [here](http://slack.k8s.io)).
 
-## Learn more!
+## Learn more
 
 Please find further resources about out project here:
 
