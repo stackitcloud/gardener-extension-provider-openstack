@@ -1,0 +1,6 @@
+# See the OWNERS docs at https://go.k8s.io/owners
+
+reviewers:
+- stackitcloud-gardener-extension-provider-openstack-reviewers
+approvers:
+- stackitcloud-gardener-extension-provider-openstack-approvers
