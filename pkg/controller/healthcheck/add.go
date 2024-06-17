@@ -18,8 +18,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/gardener/gardener-extension-provider-openstack/pkg/apis/openstack/helper"
-	"github.com/gardener/gardener-extension-provider-openstack/pkg/openstack"
 	healthcheckconfig "github.com/gardener/gardener/extensions/pkg/apis/config"
 	"github.com/gardener/gardener/extensions/pkg/controller/healthcheck"
 	"github.com/gardener/gardener/extensions/pkg/controller/healthcheck/worker"
@@ -31,6 +29,9 @@ import (
 	"k8s.io/utils/pointer"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/manager"
+
+	"github.com/gardener/gardener-extension-provider-openstack/pkg/apis/openstack/helper"
+	"github.com/gardener/gardener-extension-provider-openstack/pkg/openstack"
 )
 
 var (
