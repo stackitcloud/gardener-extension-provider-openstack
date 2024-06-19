@@ -149,7 +149,7 @@ var _ = Describe("Actuator", func() {
 				},
 			)
 			openstackClientFactoryFactory.EXPECT().NewFactory(credentials).Return(openstackClientFactory, nil)
-			openstackClientFactory.EXPECT().DNS().Return(dnsClient, nil)
+			openstackClientFactory.EXPECT().DNS(gomock.Any()).Return(dnsClient, nil)
 			dnsClient.EXPECT().GetZones(ctx).Return(zones, nil)
 			dnsClient.EXPECT().CreateOrUpdateRecordSet(ctx, zone, dnsName, string(extensionsv1alpha1.DNSRecordTypeA), []string{address}, 120).Return(nil)
 			dnsClient.EXPECT().DeleteRecordSet(ctx, zone, "comment-"+dnsName, "TXT").Return(nil)
@@ -178,7 +178,7 @@ var _ = Describe("Actuator", func() {
 				},
 			)
 			openstackClientFactoryFactory.EXPECT().NewFactory(credentials).Return(openstackClientFactory, nil)
-			openstackClientFactory.EXPECT().DNS().Return(dnsClient, nil)
+			openstackClientFactory.EXPECT().DNS(gomock.Any()).Return(dnsClient, nil)
 			dnsClient.EXPECT().DeleteRecordSet(ctx, zone, dnsName, string(extensionsv1alpha1.DNSRecordTypeA)).Return(nil)
 
 			err := a.Delete(ctx, logger, dns, nil)
