@@ -107,7 +107,7 @@ func (a *actuator) deleteWithTerraformer(ctx context.Context, log logr.Logger, i
 		return util.DetermineError(err, helper.KnownCodes)
 	}
 
-	networkingClient, err := openstackClient.Networking()
+	networkingClient, err := openstackClient.Networking(openstackclient.WithRegion(infra.Spec.Region))
 	if err != nil {
 		return util.DetermineError(err, helper.KnownCodes)
 	}

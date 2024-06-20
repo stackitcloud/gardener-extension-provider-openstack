@@ -47,12 +47,12 @@ func (a *actuator) Delete(ctx context.Context, log logr.Logger, bastion *extensi
 		return util.DetermineError(fmt.Errorf("could not create openstack client factory: %w", err), helper.KnownCodes)
 	}
 
-	computeClient, err := openstackClientFactory.Compute()
+	computeClient, err := openstackClientFactory.Compute(openstackclient.WithRegion(cluster.Shoot.Spec.Region))
 	if err != nil {
 		return util.DetermineError(err, helper.KnownCodes)
 	}
 
-	networkingClient, err := openstackClientFactory.Networking()
+	networkingClient, err := openstackClientFactory.Networking(openstackclient.WithRegion(cluster.Shoot.Spec.Region))
 	if err != nil {
 		return util.DetermineError(err, helper.KnownCodes)
 	}
