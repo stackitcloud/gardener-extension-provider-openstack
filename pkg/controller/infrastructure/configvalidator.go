@@ -74,7 +74,7 @@ func (c *configValidator) Validate(ctx context.Context, infra *extensionsv1alpha
 		allErrs = append(allErrs, field.InternalError(nil, fmt.Errorf("could not create Openstack client factory: %+v", err)))
 		return allErrs
 	}
-	networkingClient, err := clientFactory.Networking()
+	networkingClient, err := clientFactory.Networking(openstackclient.WithRegion(infra.Spec.Region))
 	if err != nil {
 		allErrs = append(allErrs, field.InternalError(nil, fmt.Errorf("could not create Openstack networking client: %+v", err)))
 		return allErrs
@@ -84,13 +84,13 @@ func (c *configValidator) Validate(ctx context.Context, infra *extensionsv1alpha
 	logger.Info("Validating infrastructure configuration")
 	allErrs = append(allErrs, c.validateFloatingPoolName(ctx, networkingClient, config.FloatingPoolName, field.NewPath("floatingPoolName"))...)
 	if config.Networks.ID != nil {
-		allErrs = append(allErrs, c.validateNetwork(ctx, networkingClient, *config.Networks.ID, field.NewPath("networks.id"))...)
+		allErrs = append(allErrs, c.validateNetwork(networkingClient, *config.Networks.ID, field.NewPath("networks.id"))...)
 	}
 	if config.Networks.SubnetID != nil {
-		allErrs = append(allErrs, c.validateSubnet(ctx, networkingClient, *config.Networks.SubnetID, *config.Networks.ID, field.NewPath("networks.subnetId"))...)
+		allErrs = append(allErrs, c.validateSubnet(networkingClient, *config.Networks.SubnetID, *config.Networks.ID, field.NewPath("networks.subnetId"))...)
 	}
 	if config.Networks.Router != nil && config.Networks.Router.ID != "" {
-		allErrs = append(allErrs, c.validateRouter(ctx, networkingClient, config.Networks.Router.ID, field.NewPath("networks.router.id"))...)
+		allErrs = append(allErrs, c.validateRouter(networkingClient, config.Networks.Router.ID, field.NewPath("networks.router.id"))...)
 	}
 
 	return allErrs
@@ -114,7 +114,7 @@ func (c *configValidator) validateFloatingPoolName(ctx context.Context, networki
 	return allErrs
 }
 
-func (c *configValidator) validateNetwork(_ context.Context, networkingClient openstackclient.Networking, networkID string, fldPath *field.Path) field.ErrorList {
+func (c *configValidator) validateNetwork(networkingClient openstackclient.Networking, networkID string, fldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 
 	networks, err := networkingClient.ListNetwork(networks.ListOpts{ID: networkID})
@@ -129,7 +129,7 @@ func (c *configValidator) validateNetwork(_ context.Context, networkingClient op
 	return allErrs
 }
 
-func (c *configValidator) validateSubnet(_ context.Context, networkingClient openstackclient.Networking, subnetID, networkID string, fldPath *field.Path) field.ErrorList {
+func (c *configValidator) validateSubnet(networkingClient openstackclient.Networking, subnetID, networkID string, fldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 
 	// validate subnet existence
@@ -151,7 +151,7 @@ func (c *configValidator) validateSubnet(_ context.Context, networkingClient ope
 	return allErrs
 }
 
-func (c *configValidator) validateRouter(_ context.Context, networkingClient openstackclient.Networking, routerID string, fldPath *field.Path) field.ErrorList {
+func (c *configValidator) validateRouter(networkingClient openstackclient.Networking, routerID string, fldPath *field.Path) field.ErrorList {
 	allErrs := field.ErrorList{}
 
 	routers, err := networkingClient.ListRouters(routers.ListOpts{ID: routerID})

@@ -56,6 +56,14 @@ func NewActuator(mgr manager.Manager, openstackClientFactory openstackclient.Fac
 	}
 }
 
+func resolveRegion(dns *extensionsv1alpha1.DNSRecord) string {
+	var region string
+	if dns.Spec.Region != nil {
+		region = *dns.Spec.Region
+	}
+	return region
+}
+
 // Reconcile reconciles the DNSRecord.
 func (a *actuator) Reconcile(ctx context.Context, log logr.Logger, dns *extensionsv1alpha1.DNSRecord, _ *extensionscontroller.Cluster) error {
 	// Create Openstack DNS client
@@ -67,7 +75,7 @@ func (a *actuator) Reconcile(ctx context.Context, log logr.Logger, dns *extensio
 	if err != nil {
 		return util.DetermineError(fmt.Errorf("could not create Openstack client factory: %w", err), helper.KnownCodes)
 	}
-	dnsClient, err := openstackClientFactory.DNS()
+	dnsClient, err := openstackClientFactory.DNS(openstackclient.WithRegion(resolveRegion(dns)))
 	if err != nil {
 		return util.DetermineError(fmt.Errorf("could not create Openstack DNS client: %w", err), helper.KnownCodes)
 	}
@@ -117,7 +125,7 @@ func (a *actuator) Delete(ctx context.Context, log logr.Logger, dns *extensionsv
 	if err != nil {
 		return util.DetermineError(fmt.Errorf("could not create Openstack client factory: %+v", err), helper.KnownCodes)
 	}
-	dnsClient, err := openstackClientFactory.DNS()
+	dnsClient, err := openstackClientFactory.DNS(openstackclient.WithRegion(resolveRegion(dns)))
 	if err != nil {
 		return util.DetermineError(fmt.Errorf("could not create Openstack DNS client: %+v", err), helper.KnownCodes)
 	}

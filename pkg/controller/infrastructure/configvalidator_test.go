@@ -148,7 +148,7 @@ var _ = Describe("ConfigValidator", func() {
 				},
 			)
 			openstackClientFactoryFactory.EXPECT().NewFactory(credentials).Return(openstackClientFactory, nil)
-			openstackClientFactory.EXPECT().Networking().Return(networkingClient, nil)
+			openstackClientFactory.EXPECT().Networking(gomock.Any()).Return(networkingClient, nil)
 		})
 
 		It("should forbid floating pool name that doesn't exist", func() {
