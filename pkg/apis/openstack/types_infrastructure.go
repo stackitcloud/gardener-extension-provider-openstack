@@ -43,8 +43,12 @@ type Networks struct {
 	Workers string
 	// ID is the ID of an existing private network.
 	ID *string
+	// SubnetID is the ID of an existing subnet.
+	SubnetID *string
 	// ShareNetwork holds information about the share network (used for shared file systems like NFS)
 	ShareNetwork *ShareNetwork
+	// DNSServers overrides the default dns configuration from cloud profile
+	DNSServers *[]string
 }
 
 // Router indicates whether to use an existing router or create a new one.

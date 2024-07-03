@@ -1375,6 +1375,18 @@ string
 </tr>
 <tr>
 <td>
+<code>subnetId</code></br>
+<em>
+string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>SubnetID is the ID of an existing subnet.</p>
+</td>
+</tr>
+<tr>
+<td>
 <code>shareNetwork</code></br>
 <em>
 <a href="#openstack.provider.extensions.gardener.cloud/v1alpha1.ShareNetwork">
@@ -1385,6 +1397,18 @@ ShareNetwork
 <td>
 <em>(Optional)</em>
 <p>ShareNetwork holds information about the share network (used for shared file systems like NFS)</p>
+</td>
+</tr>
+<tr>
+<td>
+<code>dnsServers</code></br>
+<em>
+[]string
+</em>
+</td>
+<td>
+<em>(Optional)</em>
+<p>DNSServers overrides the default dns configuration from cloud profile</p>
 </td>
 </tr>
 </tbody>

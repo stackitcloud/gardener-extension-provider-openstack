@@ -76,6 +76,7 @@ func ComputeTerraformerTemplateValues(
 ) (map[string]interface{}, error) {
 	var (
 		createRouter  = true
+		createSubnet  = true
 		createNetwork = true
 		useCACert     = false
 		routerConfig  = map[string]interface{}{
@@ -108,6 +109,13 @@ func ComputeTerraformerTemplateValues(
 		routerConfig["floatingPoolSubnet"] = *floatingPoolSubnet
 	}
 
+	// Configure DNS that cloud profile is default and overridable by shoot config
+	var dnsServers []string
+	dnsServers = cloudProfileConfig.DNSServers
+	if config.Networks.DNSServers != nil {
+		dnsServers = *config.Networks.DNSServers
+	}
+
 	keyStoneURL, err := helper.FindKeyStoneURL(cloudProfileConfig.KeyStoneURLs, cloudProfileConfig.KeyStoneURL, infra.Spec.Region)
 	if err != nil {
 		return nil, err
@@ -136,6 +144,11 @@ func ComputeTerraformerTemplateValues(
 		outputKeysConfig["shareNetworkName"] = TerraformOutputKeyShareNetworkName
 	}
 
+	if config.Networks.SubnetID != nil {
+		createSubnet = false
+		networksConfig["subnet"] = *config.Networks.SubnetID
+	}
+
 	return map[string]interface{}{
 		"openstack": map[string]interface{}{
 			"maxApiCallRetries": MaxApiCallRetries,
@@ -147,10 +160,11 @@ func ComputeTerraformerTemplateValues(
 		},
 		"create": map[string]interface{}{
 			"router":       createRouter,
+			"subnet":       createSubnet,
 			"network":      createNetwork,
 			"shareNetwork": createShareNetwork,
 		},
-		"dnsServers":   cloudProfileConfig.DNSServers,
+		"dnsServers":   dnsServers,
 		"sshPublicKey": string(infra.Spec.SSHPublicKey),
 		"router":       routerConfig,
 		"clusterName":  infra.Namespace,

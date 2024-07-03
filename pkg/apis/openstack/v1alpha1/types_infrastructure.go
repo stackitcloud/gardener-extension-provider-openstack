@@ -47,9 +47,15 @@ type Networks struct {
 	// ID is the ID of an existing private network.
 	// +optional
 	ID *string `json:"id,omitempty"`
+	// SubnetID is the ID of an existing subnet.
+	// +optional
+	SubnetID *string `json:"subnetId,omitempty"`
 	// ShareNetwork holds information about the share network (used for shared file systems like NFS)
 	// +optional
 	ShareNetwork *ShareNetwork `json:"shareNetwork,omitempty"`
+	// DNSServers overrides the default dns configuration from cloud profile
+	// +optional
+	DNSServers *[]string `json:"dnsServers,omitempty"`
 }
 
 // Router indicates whether to use an existing router or create a new one.

@@ -99,10 +99,13 @@ func NewFlowContext(log logr.Logger, clientFactory osclient.Factory,
 	if err != nil {
 		return nil, fmt.Errorf("creating compute client failed: %w", err)
 	}
-	loadbalancing, err := clientFactory.Loadbalancing(osclient.WithRegion(infra.Spec.Region))
-	if err != nil {
-		return nil, err
-	}
+
+	// STACKIT Openstack has no Loadbalancer API, so we are skipping this call, see
+	// https://github.com/gardener/gardener-extension-provider-openstack/issues/672
+	// loadbalancing, err := clientFactory.Loadbalancing(osclient.WithRegion(infra.Spec.Region))
+	// if err != nil {
+	// 	return nil, err
+	// }
 
 	flowContext := &FlowContext{
 		BasicFlowContext:   *shared.NewBasicFlowContext(log, whiteboard, persistor),
@@ -112,9 +115,9 @@ func NewFlowContext(log logr.Logger, clientFactory osclient.Factory,
 		config:             config,
 		cloudProfileConfig: cloudProfileConfig,
 		networking:         networking,
-		loadbalancing:      loadbalancing,
-		access:             access,
-		compute:            compute,
+		// loadbalancing:      loadbalancing,
+		access:  access,
+		compute: compute,
 	}
 	return flowContext, nil
 }
